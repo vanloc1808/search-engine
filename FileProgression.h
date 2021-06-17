@@ -1,9 +1,10 @@
 #pragma once
+#include <iostream>
 
 
 
 
 struct TF {
-	string data;
+	std::string data;
 	float frequency;
 };

@@ -1,23 +1,46 @@
-// SearchEngine.cpp : This file contains the 'main' function. Program execution begins and ends there.
-//
+#define _CRT_SECURE_NO_WARNINGS
 
 #include <iostream>
+#include <stdio.h>
+#include <string>
+#include <iostream>
+#include <fstream>
+
+using namespace std;
 
 int main()
 {
-    std::cout << "Hello World!\n";
-    std::cout << "Loc dep trai\n";
-    std::cout << "Nghia cung dep trai\n";
+    char command[100] = { 0 };
+    string path = "new test";
+    sprintf(command, "dir \"%s\" /s /b /o:n /ad > path.txt", path.c_str());
+    system(command);
+
+    string* folderPath = (string*)calloc(100, sizeof(string));
+    string* subFolderName = (string*)calloc(100, sizeof(string));
+    int idx = 0;
+    ifstream fPath;
+    fPath.open("path.txt");
+    while (getline(fPath, folderPath[idx])) {
+        int len = folderPath[idx].length();
+        if (len == 0) {
+            break;
+        }
+        int pos = 0;
+        for (int i = len - 1; i >= 0; i--) {
+            if (folderPath[idx][i] == '\\') {
+                pos = i;
+                break;
+            }
+        }
+        subFolderName[idx] = "";
+        for (; pos < len; pos++) {
+            subFolderName[idx] += folderPath[idx][pos];
+        }
+        idx++;
+    }
+
+    fPath.close();
+
     return 0;
 }
 
-// Run program: Ctrl + F5 or Debug > Start Without Debugging menu
-// Debug program: F5 or Debug > Start Debugging menu
-
-// Tips for Getting Started: 
-//   1. Use the Solution Explorer window to add/manage files
-//   2. Use the Team Explorer window to connect to source control
-//   3. Use the Output window to see build output and other messages
-//   4. Use the Error List window to view errors
-//   5. Go to Project > Add New Item to create new code files, or Project > Add Existing Item to add existing code files to the project
-//   6. In the future, to open this project again, go to File > Open > Project and select the .sln file
