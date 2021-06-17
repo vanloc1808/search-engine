@@ -2,12 +2,24 @@
 //
 
 #include <iostream>
+#include <string>
+#pragma warning(disable:4996)
+using namespace std;
+
 
 int main()
 {
     std::cout << "Hello World!\n";
     std::cout << "Loc dep trai\n";
     std::cout << "Nghia cung dep trai\n";
+
+	char command[100] = { 0 };
+	
+	string path = "newtrain";
+	sprintf(command, "dir \"%s\" /s /b /o:n /ad > xyz.txt", path.c_str());
+	system(command);
+
+
     return 0;
 }
 
