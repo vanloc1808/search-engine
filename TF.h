@@ -1,15 +1,16 @@
 #include <string>
 using std::string;
 
+// word | count
 struct TF {
     string word;
-    double val;
     int count;
 };
 
 struct TF_list {
 	int size;
 	int capacity;
+	int totalCount;
 	TF* arrNorm;
 	TF* arrTele;
 };
