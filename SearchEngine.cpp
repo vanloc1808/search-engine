@@ -40,7 +40,6 @@ int main()
     }
 
     fPath.close();
-
     return 0;
 }
 

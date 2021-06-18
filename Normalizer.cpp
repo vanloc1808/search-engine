@@ -2,7 +2,8 @@
 #include <string>
 #include <iostream>
 #include <fstream>
-#include <codecvt>
+//#include <codecvt>
+#include "Normalizer.h"
 using namespace std;
 
 
@@ -66,7 +67,7 @@ string VEconvert_telex(wstring source) {
 	return result;
 }
 
-#pragma warning(disable:4996)
+//#pragma warning(disable:4996)
 
 // int main()
 // {
