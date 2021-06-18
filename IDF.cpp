@@ -2,20 +2,29 @@
 #include <stdio.h>
 #include <memory.h>
 
+#pragma warning(disable:4996)
+
 void IDFListInit(IDF_list &List)
 {
 	List.size = 0;	
 	List.capacity = 100;
-	List.arrNorm = (IDF*)malloc(100 * sizeof(IDF));
-	List.arrTele = (IDF*)malloc(100 * sizeof(IDF));
+	List.arrNorm = new IDF[100];
+	List.arrTele = new IDF[100];
 }
 
 void addIDF(IDF_list &List, IDF data, bool isTelex)
 {
 	if (List.size == List.capacity) {
 		List.capacity += 100;
-		List.arrNorm = (IDF*)realloc(List.arrNorm, List.capacity * sizeof(IDF));
-		List.arrTele = (IDF*)realloc(List.arrTele, List.capacity * sizeof(IDF));
+
+		IDF* temp1 = new IDF[List.capacity];
+		IDF* temp2 = new IDF[List.capacity];
+		for (int i = 0; i < List.capacity - 100; i++) temp1[i] = List.arrNorm[i];
+		for (int i = 0; i < List.capacity - 100; i++) temp2[i] = List.arrTele[i];
+		delete[] List.arrNorm;
+		delete[] List.arrTele;
+		List.arrNorm = temp1;
+		List.arrTele = temp2;
 	}
 
 	if (isTelex)
@@ -59,8 +68,8 @@ void SaveIDFList(char *filename, IDF_list List)
 
 void FreeIDFList(IDF_list &List)
 {
-	free(List.arrNorm);
-	free(List.arrTele);
+	delete[] List.arrNorm;
+	delete[] List.arrTele;
 	List.arrNorm = nullptr;
 	List.arrTele = nullptr;
 	List.capacity = 0;

@@ -1,20 +1,29 @@
 #include "TF.h"
 
+#pragma warning(disable:4996)
+
 void TFListInit(TF_list &List)
 {
 	List.size = 0;
 	List.totalCount = 0;
 	List.capacity = 100;
-	List.arrNorm = (TF*)malloc(100 * sizeof(TF));
-	List.arrTele = (TF*)malloc(100 * sizeof(TF));
+	List.arrNorm = new TF[100];
+	List.arrTele = new TF[100];
 }
 
 void addTF(TF_list &List, TF data, bool isTelex)
 {
 	if (List.size == List.capacity) {
 		List.capacity += 100;
-		List.arrNorm = (TF*)realloc(List.arrNorm, List.capacity * sizeof(TF));
-		List.arrTele = (TF*)realloc(List.arrTele, List.capacity * sizeof(TF));
+
+		TF* temp1 = new TF[List.capacity];
+		TF* temp2 = new TF[List.capacity];
+		for (int i = 0; i < List.capacity - 100; i++) temp1[i] = List.arrNorm[i];
+		for (int i = 0; i < List.capacity - 100; i++) temp2[i] = List.arrTele[i];
+		delete[] List.arrNorm;
+		delete[] List.arrTele;
+		List.arrNorm = temp1;
+		List.arrTele = temp2;
 	}
 
 	List.totalCount += data.count;
@@ -63,8 +72,8 @@ void SaveTFList(char *filename, TF_list List)
 
 void FreeTFList(TF_list &List)
 {
-	free(List.arrNorm);
-	free(List.arrTele);
+	delete[] List.arrNorm;
+	delete[] List.arrTele;
 	List.arrNorm = nullptr;
 	List.arrTele = nullptr;
 	List.totalCount = 0;
