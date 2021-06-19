@@ -7,6 +7,8 @@
 #include <fstream>
 #include "FileProgression.h"
 
+#include "IDF.h"
+
 using namespace std;
 
 int main()

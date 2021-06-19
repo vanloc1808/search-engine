@@ -1,5 +1,6 @@
 #include "TF.h"
-
+#include <fstream>
+using namespace std;
 #pragma warning(disable:4996)
 
 void TFListInit(TF_list &List)
@@ -36,38 +37,55 @@ void addTF(TF_list &List, TF data, bool isTelex)
 
 void LoadTFList(char *filename, TF_list& List)
 {
-	FILE* fr = fopen(filename, "rb");
-	if (!fr) {
-		fprintf(stderr, "Cannot read TF list!\n");
-		return;
-	}
+	ifstream fr(filename, ios::in);
 
 	FreeTFList(List);
-	fread(&List.capacity, sizeof(int), 1, fr);
-	fread(&List.size, sizeof(int), 1, fr);
-	fread(&List.totalCount, sizeof(int), 1, fr);
-	fread(List.arrNorm, sizeof(TF), List.capacity, fr);
-	fread(List.arrTele, sizeof(TF), List.capacity, fr);
+	
+	fr >> List.capacity >> List.size >> List.totalCount;
+	fr.ignore();
 
-	fclose(fr);
+	string s = "";
+	for (int i = 0; i < List.capacity; i++)
+	{
+		getline(fr, s);
+		if (s.length() > 0 && s.back() == '\r') s.pop_back();
+		List.arrNorm[i].word = s;
+		getline(fr, s);
+		if (s.length() > 0 && s.back() == '\r') s.pop_back();
+		List.arrNorm[i].count = stoi(s);
+	}
+
+	for (int i = 0; i < List.capacity; i++)
+	{
+		getline(fr, s);
+		if (s.length() > 0 && s.back() == '\r') s.pop_back();
+		List.arrTele[i].word = s;
+		getline(fr, s);
+		if (s.length() > 0 && s.back() == '\r') s.pop_back();
+		List.arrTele[i].count = stoi(s);
+	}
+
+	fr.close();
 }
 
 void SaveTFList(char *filename, TF_list List)
 {
-	FILE* fw = fopen(filename, "wb");
-	if (!fw) {
-		fprintf(stderr, "Cannot save TF list!\n");
-		return;
+	ofstream fw(filename, ios::out);
+
+	fw << List.capacity << "\n" << List.size << "\n" << List.totalCount << "\n";
+	for (int i = 0; i < List.capacity; i++)
+	{
+		fw << List.arrNorm[i].word << "\n";
+		fw << List.arrNorm[i].count << "\n";
 	}
 
+	for (int i = 0; i < List.capacity; i++)
+	{
+		fw << List.arrTele[i].word << "\n";
+		fw << List.arrTele[i].count << "\n";
+	}
 
-	fwrite(&List.capacity, sizeof(int), 1, fw);
-	fwrite(&List.size, sizeof(int), 1, fw);
-	fwrite(&List.totalCount, sizeof(int), 1, fw);
-	fwrite(List.arrNorm, sizeof(TF), List.capacity, fw);
-	fwrite(List.arrTele, sizeof(TF), List.capacity, fw);
-
-	fclose(fw);
+	fw.close();
 }
 
 void FreeTFList(TF_list &List)
