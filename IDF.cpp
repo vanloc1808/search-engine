@@ -1,6 +1,8 @@
 #include "IDF.h"
 #include <stdio.h>
 #include <memory.h>
+#include <fstream>
+using namespace std;
 
 #pragma warning(disable:4996)
 
@@ -35,35 +37,65 @@ void addIDF(IDF_list &List, IDF data, bool isTelex)
 
 void LoadIDFList(char *filename, IDF_list &List)
 {
-	FILE* fr = fopen(filename, "rb");
-	if (!fr) {
-		fprintf(stderr, "Cannot read IDF list!\n");
-		return;
-	}
+	ifstream fr(filename, ios::in);
 
 	FreeIDFList(List);
-	fread(&List.capacity, sizeof(int), 1, fr);
-	fread(&List.size, sizeof(int), 1, fr);
-	fread(List.arrNorm, sizeof(IDF), List.capacity, fr);
-	fread(List.arrTele, sizeof(IDF), List.capacity, fr);
 
-	fclose(fr);
+	fr >> List.capacity >> List.size;
+	string s = "";
+	fr.ignore();
+	List.arrNorm = new IDF[List.capacity];
+	List.arrTele = new IDF[List.capacity];
+
+	for (int i = 0; i < List.capacity; i++)
+	{
+		getline(fr, s);
+		if (s.length() > 0 && s.back() == '\r') s.pop_back();
+		List.arrNorm[i].word = s;
+		getline(fr, s);
+		if (s.length() > 0 && s.back() == '\r') s.pop_back();
+		List.arrNorm[i].value = stod(s);
+		getline(fr, s);
+		if (s.length() > 0 && s.back() == '\r') s.pop_back();
+		List.arrNorm[i].name = s;
+	}
+
+	for (int i = 0; i < List.capacity; i++)
+	{
+		getline(fr, s);
+		if (s.length() > 0 && s.back() == '\r') s.pop_back();
+		List.arrTele[i].word = s;
+		getline(fr, s);
+		if (s.length() > 0 && s.back() == '\r') s.pop_back();
+		List.arrTele[i].value = stod(s);
+		getline(fr, s);
+		if (s.length() > 0 && s.back() == '\r') s.pop_back();
+		List.arrTele[i].name = s;
+	}
+
+	fr.close();
 }
 
 void SaveIDFList(char *filename, IDF_list List)
 {
-	FILE* fw = fopen(filename, "wb");
-	if (!fw) {
-		fprintf(stderr, "Cannot save IDF list!\n");
-		return;
+	ofstream fw(filename, ios::out);
+
+	fw << List.capacity << "\n";
+	fw << List.size << "\n";
+	for (int i = 0; i < List.capacity; i++)
+	{
+		fw << List.arrNorm[i].word << "\n";
+		fw << List.arrNorm[i].value << "\n";
+		fw << List.arrNorm[i].name << "\n";
+	}
+	for (int i = 0; i < List.capacity; i++)
+	{
+		fw << List.arrTele[i].word << "\n";
+		fw << List.arrTele[i].value << "\n";
+		fw << List.arrTele[i].name << "\n";
 	}
 
-	fwrite(&List.capacity, sizeof(int), 1, fw);
-	fwrite(&List.size, sizeof(int), 1, fw);
-	fwrite(List.arrNorm, sizeof(IDF), List.capacity, fw);
-	fwrite(List.arrTele, sizeof(IDF), List.capacity, fw);
-
-	fclose(fw);
+	fw.close();
 }
 
 void FreeIDFList(IDF_list &List)
