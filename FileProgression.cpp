@@ -65,3 +65,26 @@ void fileDirecProgression(string folder, string*& subFolderName) {
     getFileDirectory(folder, subFolderName, idx);
     delete[]subFolderName;
 }
+
+void fileInput() {
+    ifstream subFolder;
+    subFolder.open("SubFolderName.txt");
+    string subFolName;
+    while (getline(subFolder, subFolName)) {
+        if (subFolName.length() == 0) {
+            break;
+        }
+        string directory = "metadata\\" + subFolName + ".txt";
+        ifstream file;
+        file.open(directory);
+        string textFile;
+        while (getline(file, textFile)) {
+            /*
+            code
+            */
+        }
+        file.close();
+    }
+
+    subFolder.close();
+}
