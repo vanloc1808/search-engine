@@ -11,3 +11,5 @@ void getSubFolderName(string folder, string*& subFolderName, int& idx);
 void getFileDirectory(string folder, string* subFolderName, int idx);
 
 void fileDirecProgression(string folder, string*& subFolderName);
+
+void fileInput();

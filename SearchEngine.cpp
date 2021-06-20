@@ -15,6 +15,7 @@ int main()
 {
     string* subFolderName;
     fileDirecProgression("new test", subFolderName);
+    fileInput();
     return 0;
 }
 
