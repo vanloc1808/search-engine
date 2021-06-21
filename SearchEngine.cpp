@@ -6,7 +6,7 @@
 #include <iostream>
 #include <fstream>
 #include "FileProgression.h"
-
+#include <time.h>
 #include "IDF.h"
 
 using namespace std;
@@ -16,6 +16,7 @@ int main()
 //    string* subFolderName;
     //fileDirecProgression("new test", subFolderName);
     fileInput();
+    cout << (double)clock() / CLOCKS_PER_SEC << endl;
     return 0;
 }
 
