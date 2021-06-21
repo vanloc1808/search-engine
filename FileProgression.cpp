@@ -67,40 +67,40 @@ void fileDirecProgression(string folder, string*& subFolderName) {
     getFileDirectory(folder, subFolderName, idx);
     delete[]subFolderName;
 }
-/*
-void convertToVE(wifstream& fin, wstring& s, string* strArr, unsigned int& size, unsigned int& capacity){
-    string tempStr = VEconvert(s);
-    if (tempStr.length() == 0) {
-        return;
-    }
-    if (size == capacity) {
-        capacity += 100;
-        string* temp = new string[capacity];
-        for (int i = 0; i < capacity - 100; i++) {
-            temp[i] = strArr[i];
-        }
-        delete[]strArr;
-        strArr = temp;
-    }
-    strArr[size] = tempStr;
-    size++;
-}
 
-void everyFolder(string textFile) {
-    wifstream fin(textFile);
-    fin.imbue(locale(locale::empty(), new std::codecvt_utf16<wchar_t, 0x10ffff, std::little_endian>));
-    wstring s;
-    string* strArr;
-    unsigned int capacity = 100;
-    strArr = new string[capacity];
-    unsigned int size = 0;
-    while (fin >> s) {
-        convertToVE(fin, s, strArr, size, capacity);
-    }
+void IterateFile(std::string &directory, std::wstring &s, unsigned int &size, unsigned int &capacity, std::string * &strArr)
+{
+	ifstream file;
+	file.open(directory);
+	string textFile;
+	while (getline(file, textFile)) {
+		wifstream fin(textFile);
+		fin.imbue(locale(locale::empty(), new codecvt_utf16<wchar_t, 0x10ffff, std::little_endian>));
+		while (fin >> s) {
+			string tempStr = VEconvert(s);
+			if (tempStr.length() == 0) {
+				continue;
+			}
+			if (size == capacity) {
+				capacity += 100;
+				string* temp = new string[capacity];
+				for (int i = 0; i < capacity - 100; i++) {
+					temp[i] = strArr[i];
+				}
+				delete[]strArr;
+				strArr = temp;
+			}
+			strArr[size] = tempStr;
+			size++;
+		}
 
-    fin.close();
+		// Todo
+
+		size = 0;
+		fin.close();
+	}
+	file.close();
 }
-*/
 
 void fileInput() {
     ifstream subFolder;
@@ -109,40 +109,14 @@ void fileInput() {
     string* strArr;
     unsigned int capacity = 100;
     unsigned int size = 0;
+	wstring s;
+	strArr = new string[capacity];
     while (getline(subFolder, subFolName)) {
         if (subFolName.length() == 0) {
             break;
         }
         string directory = "metadata\\" + subFolName + ".txt";
-        ifstream file;
-        file.open(directory);
-        string textFile;
-        while (getline(file, textFile)) {
-            wifstream fin(textFile);
-            fin.imbue(locale(locale::empty(), new std::codecvt_utf16<wchar_t, 0x10ffff, std::little_endian>));
-            wstring s;
-            strArr = new string[capacity];
-            while (fin >> s) {
-                string tempStr = VEconvert(s);
-                if (tempStr.length() == 0) {
-                    continue;
-                }
-                if (size == capacity) {
-                    capacity += 100;
-                    string* temp = new string[capacity];
-                    for (int i = 0; i < capacity - 100; i++) {
-                        temp[i] = strArr[i];
-                    }
-                    delete[]strArr;
-                    strArr = temp;
-                }
-                strArr[size] = tempStr;
-                size++;
-            }
-            size = 0;
-            fin.close();
-        }
-        file.close();
+		IterateFile(directory, s, size, capacity, strArr);
     }
     delete[]strArr;
     subFolder.close();

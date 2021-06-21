@@ -44,8 +44,6 @@ string VEconvert(wstring source) {
 	wchar_t t = source[i];
 	for (; pos < 93 && t != inverseMap[pos] && t != inverseCapitalMap[pos]; pos++);
 	if (pos == 93) {
-		if (L'!' <= t && t <= L'/') continue;
-		result += t;
 		continue;
 	}
     result += normalMap[pos];

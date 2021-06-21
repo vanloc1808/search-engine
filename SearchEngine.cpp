@@ -13,8 +13,8 @@ using namespace std;
 
 int main()
 {
-    string* subFolderName;
-    fileDirecProgression("new test", subFolderName);
+//    string* subFolderName;
+    //fileDirecProgression("new test", subFolderName);
     fileInput();
     return 0;
 }
