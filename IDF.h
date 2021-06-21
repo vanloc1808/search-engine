@@ -13,11 +13,10 @@ struct IDF_list {
 	int size;
 	int capacity;
 	IDF* arrNorm;
-	IDF* arrTele;
 };
 
 void IDFListInit(IDF_list&);
-void addIDF(IDF_list&, IDF, bool);
+void addIDF(IDF_list&, IDF);
 void LoadIDFList(char*, IDF_list&);
 void SaveIDFList(char*, IDF_list);
 void FreeIDFList(IDF_list&);

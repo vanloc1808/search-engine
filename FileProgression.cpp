@@ -1,4 +1,5 @@
 #define _CRT_SECURE_NO_WARNINGS
+#pragma warning(disable:4996)
 
 #include <stdio.h>
 #include <iostream>
@@ -10,8 +11,13 @@
 #include <codecvt>
 #include "Normalizer.h"
 #include "FileProgression.h"
+#include "TF.h"
+#include "TISManipulation.h"
 
 using namespace std;
+
+int x = 0;
+TF_list L;
 
 void getSubFolderDirectory(string folder) {
 	//the parameter folder is usually "new test"
@@ -94,8 +100,16 @@ void IterateFile(std::string &directory, std::wstring &s, unsigned int &size, un
 			size++;
 		}
 
-		// Todo
-
+		sort_String(strArr, size);
+		
+		L.size = 0;
+		TFList_Input(L, strArr, size);
+		
+		char path[19];
+		itoa(x, path, 10);
+		strcat(path, ".tf");
+		SaveTFList(path, L);
+		x++;
 		size = 0;
 		fin.close();
 	}
@@ -103,6 +117,7 @@ void IterateFile(std::string &directory, std::wstring &s, unsigned int &size, un
 }
 
 void fileInput() {
+	TFListInit(L);
     ifstream subFolder;
     subFolder.open("SubFolderName.txt");
     string subFolName;
@@ -120,4 +135,5 @@ void fileInput() {
     }
     delete[]strArr;
     subFolder.close();
+	FreeTFList(L);
 }

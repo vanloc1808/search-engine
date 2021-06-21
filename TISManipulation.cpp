@@ -26,11 +26,30 @@ void sort_String(string *arr, int n)
 {
 	if (n == 1)
 		return;
-
 	int m = n / 2;
 	sort_String(arr, m);
 	sort_String(arr + m, n - m);
 	string* temp = mergeArray(arr, m, arr + m, n - m);
 	for (int i = 0; i < n; i++) arr[i] = temp[i];
 	delete[] temp;
+}
+
+void TFList_Input(TF_list& List, string* data, int n) // data is sorted increasingly
+{
+	int count = 0;
+	for (int i = 0; i < n - 1; i++)
+	{
+		count++;
+		if (data[i] != data[i + 1]) {
+			TF t{ data[i], count };
+			addTF(List, t);
+			count = 0;
+		}
+	}
+	if (count > 0)
+	{
+		TF t{ data[n - 1], count };
+		addTF(List, t);
+		count = 0;
+	}
 }

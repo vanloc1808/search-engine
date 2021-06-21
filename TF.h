@@ -1,3 +1,4 @@
+#pragma once
 #include <string>
 using std::string;
 
@@ -12,11 +13,10 @@ struct TF_list {
 	int capacity;
 	int totalCount;
 	TF* arrNorm;
-	TF* arrTele;
 };
 
 void TFListInit(TF_list&);
-void addTF(TF_list&, TF, bool);
+void addTF(TF_list&, TF);
 void LoadTFList(char*, TF_list&);
 void SaveTFList(char*, TF_list);
 void FreeTFList(TF_list&);
