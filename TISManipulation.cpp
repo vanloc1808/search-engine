@@ -1,3 +1,4 @@
+#pragma warning(disable:4996)
 #include "TISManipulation.h"
 #include <memory.h>
 #include <stdlib.h>
@@ -41,14 +42,16 @@ void TFList_Input(TF_list& List, string* data, int n) // data is sorted increasi
 	{
 		count++;
 		if (data[i] != data[i + 1]) {
-			TF t{ data[i], count };
+			TF t{ "\0", count };
+			strcpy(t.word, data[i].c_str());
 			addTF(List, t);
 			count = 0;
 		}
 	}
 	if (count > 0)
 	{
-		TF t{ data[n - 1], count };
+		TF t{ "\0", count };
+		strcpy(t.word, data[n - 1].c_str());
 		addTF(List, t);
 		count = 0;
 	}
