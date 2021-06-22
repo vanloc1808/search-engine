@@ -26,16 +26,25 @@ void getSubFolderDirectory(string folder) {
     system(command);
 }
 
-void getSubFolderName(string folder, string*& subFolderName, int& idx) { //folder is usually "new test"
+string extractName(string path)
+{
+	int pos = path.length() - 1;
+	string res = "";
+	for (; pos >= 0 && path[pos] != '\\'; pos--);
+	for (++pos; pos < path.length(); pos++) res += path[pos];
+	return res;
+}
+
+void getSubFolderName(string folder/*, string*& subFolderName, int& idx*/) { //folder is usually "new test"
     ifstream fPath;
     fPath.open("Path.txt");
     ofstream subFol;
     subFol.open("SubFolderName.txt");
-    subFolderName = new string[100];
-    idx = 0;
+    //subFolderName = new string[100];
+    //idx = 0;
     string folderPath;
     while (getline(fPath, folderPath)) {
-        subFolderName[idx] = "";
+        /*subFolderName[idx] = "";
         int pos = 0;
         int len = folderPath.length();
         for (int i = len - 1; i >= 0; i--) {
@@ -47,31 +56,40 @@ void getSubFolderName(string folder, string*& subFolderName, int& idx) { //folde
         pos++;
         for (; pos < len; pos++) {
             subFolderName[idx] += folderPath[pos];
-        }
-        subFol << subFolderName[idx] << "\n";
-        idx++;
+        }*/
+        subFol << extractName(folderPath) << "\n";
+        //idx++;
     }
     fPath.close();
     subFol.close();
+	system("del /q Path.txt");
 }
 
-void getFileDirectory(string folder, string* subFolderName, int idx) { //folder is usually "new test"
+void getFileDirectory(string folder/*, string* subFolderName, int idx*/) { //folder is usually "new test"
     system("mkdir metadata");
-    char command[100] = { 0 };
-    for (int i = 0; i < idx; i++) {
+	string command = "";
+	ifstream fr("SubFolderName.txt", ios::in);
+	while (getline(fr, command))
+	{
+		string listFile = "metadata\\" + command + ".txt";
+		command = "dir \"" + folder + "\\" + command + "\" /s /b /o:n > \"" + listFile + "\"";
+		system(command.c_str());
+	}
+    /*for (int i = 0; i < idx; i++) {
         string name = "metadata\\" + subFolderName[i] + ".txt";
         subFolderName[i] = folder + "\\" + subFolderName[i];
         sprintf(command, "dir \"%s\" /s /b /o:n > \"%s\"", subFolderName[i].c_str(), name.c_str());
         system(command);
-    }
+    }*/
+	fr.close();
 }
 
-void fileDirecProgression(string folder, string*& subFolderName) {
+void fileDirecProgression(string folder/*, string*& subFolderName*/) {
     getSubFolderDirectory(folder);
     int idx = 0;
-    getSubFolderName(folder, subFolderName, idx);
-    getFileDirectory(folder, subFolderName, idx);
-    delete[]subFolderName;
+    getSubFolderName(folder/*, subFolderName, idx*/);
+    getFileDirectory(folder/*, subFolderName, idx*/);
+    /*delete[]subFolderName;*/
 }
 
 void IterateFile(std::string &directory, std::wstring &s, unsigned int &size, unsigned int &capacity, std::string * &strArr)

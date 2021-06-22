@@ -13,9 +13,9 @@ using namespace std;
 
 int main()
 {
-//    string* subFolderName;
-    //fileDirecProgression("new test", subFolderName);
-    fileInput();
+    //string* subFolderName;
+    fileDirecProgression("new test"/*, subFolderName*/);
+    //fileInput();
     cout << (double)clock() / CLOCKS_PER_SEC << endl;
     return 0;
 }
