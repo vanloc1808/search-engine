@@ -4,7 +4,7 @@ using std::string;
 
 // word | count
 struct TF {
-    char word[20];
+    string word;
     int count;
 };
 

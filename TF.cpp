@@ -17,6 +17,7 @@ void addTF(TF_list &List, TF data)
 		List.capacity += 100;
 
 		TF* temp1 = new TF[List.capacity];
+		TF* temp2 = new TF[List.capacity];
 		for (int i = 0; i < List.capacity - 100; i++) temp1[i] = List.arrNorm[i];
 		delete[] List.arrNorm;
 		List.arrNorm = temp1;
@@ -28,13 +29,9 @@ void addTF(TF_list &List, TF data)
 
 void LoadTFList(char *filename, TF_list& List)
 {
-	ifstream fr(filename, ios::in | ios::binary);
+	ifstream fr(filename, ios::in);
 
-	fr.read((char*)&List.size, sizeof(int));
-	fr.read((char*)&List.totalCount, sizeof(int));
-	fr.read((char*)&List.arrNorm, sizeof(TF) * List.size);
-
-	/*FreeTFList(List);
+	FreeTFList(List);
 	
 	fr >> List.capacity >> List.size >> List.totalCount;
 	fr.ignore();
@@ -51,25 +48,21 @@ void LoadTFList(char *filename, TF_list& List)
 		getline(fr, s);
 		if (s.length() > 0 && s.back() == '\r') s.pop_back();
 		List.arrNorm[i].count = stoi(s);
-	}*/
+	}
 
 	fr.close();
 }
 
 void SaveTFList(char *filename, TF_list List)
 {
-	ofstream fw(filename, ios::out | ios::binary);
+	ofstream fw(filename, ios::out);
 
-	fw.write((char*)&List.size, sizeof(int));
-	fw.write((char*)&List.totalCount, sizeof(int));
-	fw.write((char*)&List.arrNorm, sizeof(TF) * List.size);
-
-	/*fw << List.size << "\n" << List.size << "\n" << List.totalCount << "\n";
+	fw << List.size << "\n" << List.size << "\n" << List.totalCount << "\n";
 	for (int i = 0; i < List.capacity; i++)
 	{
 		fw << List.arrNorm[i].word << "\n";
 		fw << List.arrNorm[i].count << "\n";
-	}*/
+	}
 
 	fw.close();
 }
