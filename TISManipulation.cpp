@@ -34,6 +34,23 @@ void sort_String(string *arr, int n)
 	delete[] temp;
 }
 
+int bSearch_TF(TF_list List, string key) // Find how many word in document
+{
+	int l = 0;
+	int h = List.size - 1;
+	while (l <= h) {
+		int m = (l + h) / 2;
+		if (key == List.arrNorm[m].word)
+			return List.arrNorm[m].count;
+		if (key < List.arrNorm[m].word) {
+			h = m - 1;
+		} else {
+			l = m + 1;
+		}
+	}
+	return 0;
+}
+
 void TFList_Input(TF_list& List, string* data, int n) // data is sorted increasingly
 {
 	int count = 0;

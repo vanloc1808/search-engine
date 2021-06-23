@@ -1,6 +1,12 @@
 #define _CRT_SECURE_NO_WARNINGS
 #pragma warning(disable:4996)
 
+#define PATH_NAME "Path.txt"
+
+#define METADATA_NAME "metadata"
+
+#define SUBFOLDER_NAME "SubFolderName.txt"
+
 #include <stdio.h>
 #include <iostream>
 #include <Windows.h>
@@ -22,7 +28,7 @@ TF_list L;
 void getSubFolderDirectory(string folder) {
 	//the parameter folder is usually "new test"
     char command[100] = { 0 };
-    sprintf(command, "dir \"%s\" /s /b /o:n /ad > Path.txt", folder.c_str());
+    sprintf(command, "dir \"%s\" /s /b /o:n /ad > " PATH_NAME "", folder.c_str());
     system(command);
 }
 
@@ -37,9 +43,9 @@ string extractName(string path)
 
 void getSubFolderName(string folder/*, string*& subFolderName, int& idx*/) { //folder is usually "new test"
     ifstream fPath;
-    fPath.open("Path.txt");
+    fPath.open(PATH_NAME);
     ofstream subFol;
-    subFol.open("SubFolderName.txt");
+    subFol.open(SUBFOLDER_NAME);
     //subFolderName = new string[100];
     //idx = 0;
     string folderPath;
@@ -62,16 +68,16 @@ void getSubFolderName(string folder/*, string*& subFolderName, int& idx*/) { //f
     }
     fPath.close();
     subFol.close();
-	system("del /q Path.txt");
+	system("del /q " PATH_NAME "");
 }
 
 void getFileDirectory(string folder/*, string* subFolderName, int idx*/) { //folder is usually "new test"
-    system("mkdir metadata");
+    system("mkdir " METADATA_NAME "");
 	string command = "";
-	ifstream fr("SubFolderName.txt", ios::in);
+	ifstream fr(SUBFOLDER_NAME, ios::in);
 	while (getline(fr, command))
 	{
-		string listFile = "metadata\\" + command + ".txt";
+		string listFile = "" METADATA_NAME "\\" + command + ".txt";
 		command = "dir \"" + folder + "\\" + command + "\" /s /b /o:n > \"" + listFile + "\"";
 		system(command.c_str());
 	}
@@ -137,7 +143,7 @@ void IterateFile(std::string &directory, std::wstring &s, unsigned int &size, un
 void fileInput() {
 	TFListInit(L);
     ifstream subFolder;
-    subFolder.open("SubFolderName.txt");
+    subFolder.open(SUBFOLDER_NAME);
     string subFolName;
     string* strArr;
     unsigned int capacity = 100;
@@ -148,7 +154,7 @@ void fileInput() {
         if (subFolName.length() == 0) {
             break;
         }
-        string directory = "metadata\\" + subFolName + ".txt";
+        string directory = "" METADATA_NAME "\\" + subFolName + ".txt";
 		IterateFile(directory, s, size, capacity, strArr);
     }
     delete[]strArr;
