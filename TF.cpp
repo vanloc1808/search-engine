@@ -67,6 +67,8 @@ void SaveTFList(char *filename, TF_list List)
 	fw.close();
 }
 
+
+
 void FreeTFList(TF_list &List)
 {
 	delete[] List.arrNorm;

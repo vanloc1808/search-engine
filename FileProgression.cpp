@@ -7,6 +7,8 @@
 
 #define SUBFOLDER_NAME "SubFolderName.txt"
 
+#define TF_NAME "tf"
+
 #include <stdio.h>
 #include <iostream>
 #include <Windows.h>
@@ -77,9 +79,26 @@ void getFileDirectory(string folder/*, string* subFolderName, int idx*/) { //fol
 	ifstream fr(SUBFOLDER_NAME, ios::in);
 	while (getline(fr, command))
 	{
-		string listFile = "" METADATA_NAME "\\" + command + ".txt";
+		string listFile = "" METADATA_NAME "\\" + command + "_temp.txt";
 		command = "dir \"" + folder + "\\" + command + "\" /s /b /o:n > \"" + listFile + "\"";
 		system(command.c_str());
+
+	}
+	fr.close();
+	fr.open(SUBFOLDER_NAME, ios::in);
+	while (getline(fr, command)) {
+		string tempListFile = "" METADATA_NAME "\\" + command + "_temp.txt";
+		ifstream temp(tempListFile, ios::in);
+		string listFile = "" METADATA_NAME "\\" + command + ".txt";
+		ofstream direc(listFile, ios::out);
+		string tempStr = "";
+		while (getline(temp, tempStr)) {
+			direc << extractName(tempStr) << "\n";
+		}
+		temp.close();
+		direc.close();
+		string toDelete = "del /q \"" + tempListFile + "\"";
+		system(toDelete.c_str());
 	}
     /*for (int i = 0; i < idx; i++) {
         string name = "metadata\\" + subFolderName[i] + ".txt";
@@ -160,4 +179,25 @@ void fileInput() {
     delete[]strArr;
     subFolder.close();
 	FreeTFList(L);
+}
+
+void createTF() {
+	ifstream subFol(SUBFOLDER_NAME, ios::in);
+	string folderName = "";
+	while (getline(subFol, folderName)) {
+		string toCreate = "mkdir \""  METADATA_NAME + '\\' + folderName + "\"";
+		system(toCreate.c_str());
+		string listFile = "" METADATA_NAME "\\" + folderName + ".txt";
+		ifstream fr(listFile, ios::in);
+		string fileName = "";
+		while (getline(fr, fileName)) {
+			string tfName = "" METADATA_NAME "\\" + folderName + fileName + ".tf";
+			ofstream tf(tfName);
+			tf.close();
+		}
+
+		fr.close();
+	}
+
+	subFol.close();
 }
