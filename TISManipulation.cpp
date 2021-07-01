@@ -2,6 +2,8 @@
 #include <memory.h>
 #include <stdlib.h>
 #include <string.h>
+#include <thread>
+using namespace std;
 
 string* mergeArray(string* A, int nA, string* B, int nB)
 {
@@ -27,12 +29,27 @@ void sort_String(string *arr, int n)
 	if (n == 1)
 		return;
 	int m = n / 2;
+
 	sort_String(arr, m);
 	sort_String(arr + m, n - m);
+
 	string* temp = mergeArray(arr, m, arr + m, n - m);
 	for (int i = 0; i < n; i++) arr[i] = temp[i];
 	delete[] temp;
 }
+
+void sort_multiThread(string* arr, int n)
+{
+	int m = n / 2;
+	thread t1(sort_String, arr, m);
+	thread t2(sort_String, arr + m, n - m);
+	t1.join();
+	t2.join();
+	string* temp = mergeArray(arr, m, arr + m, n - m);
+	for (int i = 0; i < n; i++) arr[i] = temp[i];
+	delete[] temp;
+}
+
 
 int bSearch_TF(TF_list List, string key) // Find how many word in document
 {

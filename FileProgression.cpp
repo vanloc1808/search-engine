@@ -43,37 +43,20 @@ string extractName(string path)
 	return res;
 }
 
-void getSubFolderName(string folder/*, string*& subFolderName, int& idx*/) { //folder is usually "new test"
+void getSubFolderName(string folder) { //folder is usually "new test"
     ifstream fPath;
     fPath.open(PATH_NAME);
     ofstream subFol;
     subFol.open(SUBFOLDER_NAME);
-    //subFolderName = new string[100];
-    //idx = 0;
     string folderPath;
-    while (getline(fPath, folderPath)) {
-        /*subFolderName[idx] = "";
-        int pos = 0;
-        int len = folderPath.length();
-        for (int i = len - 1; i >= 0; i--) {
-            if (folderPath[i] == '\\') {
-                pos = i;
-                break;
-            }
-        }
-        pos++;
-        for (; pos < len; pos++) {
-            subFolderName[idx] += folderPath[pos];
-        }*/
+    while (getline(fPath, folderPath)) 
         subFol << extractName(folderPath) << "\n";
-        //idx++;
-    }
     fPath.close();
     subFol.close();
 	system("del /q " PATH_NAME "");
 }
 
-void getFileDirectory(string folder/*, string* subFolderName, int idx*/) { //folder is usually "new test"
+void getFileDirectory(string folder) { //folder is usually "new test"
     system("mkdir " METADATA_NAME "");
 	string command = "";
 	ifstream fr(SUBFOLDER_NAME, ios::in);
@@ -100,30 +83,23 @@ void getFileDirectory(string folder/*, string* subFolderName, int idx*/) { //fol
 		string toDelete = "del /q \"" + tempListFile + "\"";
 		system(toDelete.c_str());
 	}
-    /*for (int i = 0; i < idx; i++) {
-        string name = "metadata\\" + subFolderName[i] + ".txt";
-        subFolderName[i] = folder + "\\" + subFolderName[i];
-        sprintf(command, "dir \"%s\" /s /b /o:n > \"%s\"", subFolderName[i].c_str(), name.c_str());
-        system(command);
-    }*/
 	fr.close();
 }
 
-void fileDirecProgression(string folder/*, string*& subFolderName*/) {
+void fileDirecProgression(string folder) {
     getSubFolderDirectory(folder);
     int idx = 0;
-    getSubFolderName(folder/*, subFolderName, idx*/);
-    getFileDirectory(folder/*, subFolderName, idx*/);
-    /*delete[]subFolderName;*/
+    getSubFolderName(folder);
+    getFileDirectory(folder);
 }
 
 void IterateFile(std::string &directory, std::wstring &s, unsigned int &size, unsigned int &capacity, std::string * &strArr)
 {
 	ifstream file;
-	file.open(directory);
+	file.open( "" METADATA_NAME "\\" + directory + ".txt");
 	string textFile;
 	while (getline(file, textFile)) {
-		wifstream fin(textFile);
+		wifstream fin("new test\\" + directory + "\\" + textFile);
 		fin.imbue(locale(locale::empty(), new codecvt_utf16<wchar_t, 0x10ffff, std::little_endian>));
 		while (fin >> s) {
 			string tempStr = VEconvert(s);
@@ -131,9 +107,9 @@ void IterateFile(std::string &directory, std::wstring &s, unsigned int &size, un
 				continue;
 			}
 			if (size == capacity) {
-				capacity += 100;
+				capacity += 1000;
 				string* temp = new string[capacity];
-				for (int i = 0; i < capacity - 100; i++) {
+				for (int i = 0; i < capacity - 1000; i++) {
 					temp[i] = strArr[i];
 				}
 				delete[]strArr;
@@ -143,7 +119,8 @@ void IterateFile(std::string &directory, std::wstring &s, unsigned int &size, un
 			size++;
 		}
 
-		sort_String(strArr, size);
+		//sort_String(strArr, size);
+		sort_multiThread(strArr, size);
 		
 		L.size = 0;
 		TFList_Input(L, strArr, size);
@@ -165,7 +142,7 @@ void fileInput() {
     subFolder.open(SUBFOLDER_NAME);
     string subFolName;
     string* strArr;
-    unsigned int capacity = 100;
+    unsigned int capacity = 1000;
     unsigned int size = 0;
 	wstring s;
 	strArr = new string[capacity];
@@ -173,8 +150,9 @@ void fileInput() {
         if (subFolName.length() == 0) {
             break;
         }
-        string directory = "" METADATA_NAME "\\" + subFolName + ".txt";
-		IterateFile(directory, s, size, capacity, strArr);
+        //string directory = "" METADATA_NAME "\\" + subFolName + ".txt";
+		//IterateFile(directory, s, size, capacity, strArr);
+		IterateFile(subFolName, s, size, capacity, strArr);
     }
     delete[]strArr;
     subFolder.close();
