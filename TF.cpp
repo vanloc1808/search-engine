@@ -7,18 +7,18 @@ void TFListInit(TF_list &List)
 {
 	List.size = 0;
 	List.totalCount = 0;
-	List.capacity = 100;
-	List.arrNorm = new TF[100];
+	List.capacity = 1000;
+	List.arrNorm = new TF[1000];
 }
 
 void addTF(TF_list &List, TF data)
 {
 	if (List.size == List.capacity) {
-		List.capacity += 100;
+		List.capacity += 1000;
 
 		TF* temp1 = new TF[List.capacity];
 		TF* temp2 = new TF[List.capacity];
-		for (int i = 0; i < List.capacity - 100; i++) temp1[i] = List.arrNorm[i];
+		for (int i = 0; i < List.capacity - 1000; i++) temp1[i] = List.arrNorm[i];
 		delete[] List.arrNorm;
 		List.arrNorm = temp1;
 	}

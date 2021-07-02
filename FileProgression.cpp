@@ -7,6 +7,8 @@
 
 #define SUBFOLDER_NAME "SubFolderName.txt"
 
+#define NEWTEST_NAME "new test";
+
 #define TF_NAME "tf"
 
 #include <stdio.h>
@@ -159,7 +161,38 @@ void fileInput() {
 	FreeTFList(L);
 }
 
-void createTF() {
+TF_list createTF(string filePath) {
+	TF_list L;
+	TFListInit(L);
+	wifstream fin(filePath, ios::in);
+	fin.imbue(locale(locale::empty(), new codecvt_utf16<wchar_t, 0x10ffff, std::little_endian>));
+	wstring s;
+	string* strArr = NULL;
+	strArr = new string[1000];
+	while (fin >> s) {
+		string tempStr = VEconvert(s);
+		if (tempStr.length() == 0) {
+			continue;
+		}
+		if (L.size == L.capacity) {
+			L.capacity += 1000;
+			string* temp = new string[L.capacity];
+			for (int i = 0; i < L.capacity - 1000; i++) {
+				temp[i] = strArr[i];
+			}
+			delete[]strArr;
+			strArr = temp;
+		}
+		strArr[L.size] = tempStr;
+		L.size++;
+	}
+	sort_multiThread(strArr, L.size);
+	TFList_Input(L, strArr, L.size);
+	fin.close();
+	return L;
+}
+
+void createMetadata(string folderDataset) {
 	ifstream subFol(SUBFOLDER_NAME, ios::in);
 	string folderName = "";
 	while (getline(subFol, folderName)) {
@@ -169,11 +202,13 @@ void createTF() {
 		ifstream fr(listFile, ios::in);
 		string fileName = "";
 		while (getline(fr, fileName)) {
-			string tfName = "" METADATA_NAME "\\" + folderName + fileName + ".tf";
-			ofstream tf(tfName);
-			tf.close();
+			string tfPath = "" METADATA_NAME "\\" + folderName + '\\' + fileName + ".tf";
+			/*ofstream tf(tfName);
+			tf.close();*/
+			string filePath = folderDataset + "\\" + folderName + "\\" + fileName;
+			TF_list L = createTF(filePath);
+			SaveTFList((char*)tfPath.c_str(), L);
 		}
-
 		fr.close();
 	}
 
