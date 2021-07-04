@@ -2,16 +2,16 @@
 #include <string>
 using std::string;
 
-// Word | Value | Name
+// Word | Value
 struct IDF {
 	string word;
-	double value;
-	string name;
+	int value;
 };
 
 struct IDF_list {
 	int size;
 	int capacity;
+	int numFile;
 	IDF* arrNorm;
 };
 

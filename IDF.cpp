@@ -9,18 +9,19 @@ using namespace std;
 void IDFListInit(IDF_list &List)
 {
 	List.size = 0;	
-	List.capacity = 100;
-	List.arrNorm = new IDF[100];
+	List.numFile = 0;
+	List.capacity = 1000;
+	List.arrNorm = new IDF[1000];
 }
 
 void addIDF(IDF_list &List, IDF data)
 {
 	if (List.size == List.capacity) {
-		List.capacity += 100;
+		List.capacity += 1000;
 
 		IDF* temp1 = new IDF[List.capacity];
 		IDF* temp2 = new IDF[List.capacity];
-		for (int i = 0; i < List.capacity - 100; i++) temp1[i] = List.arrNorm[i];
+		for (int i = 0; i < List.capacity - 1000; i++) temp1[i] = List.arrNorm[i];
 		delete[] List.arrNorm;
 		List.arrNorm = temp1;
 	}
@@ -33,7 +34,7 @@ void LoadIDFList(char *filename, IDF_list &List)
 
 	FreeIDFList(List);
 
-	fr >> List.capacity >> List.size;
+	fr >> List.capacity >> List.size >> List.numFile;
 	string s = "";
 	fr.ignore();
 	List.arrNorm = new IDF[List.capacity];
@@ -46,9 +47,6 @@ void LoadIDFList(char *filename, IDF_list &List)
 		getline(fr, s);
 		if (s.length() > 0 && s.back() == '\r') s.pop_back();
 		List.arrNorm[i].value = stod(s);
-		getline(fr, s);
-		if (s.length() > 0 && s.back() == '\r') s.pop_back();
-		List.arrNorm[i].name = s;
 	}
 
 	fr.close();
@@ -60,11 +58,11 @@ void SaveIDFList(char *filename, IDF_list List)
 
 	fw << List.size << "\n";
 	fw << List.size << "\n";
+	fw << List.numFile << "\n";
 	for (int i = 0; i < List.size; i++)
 	{
 		fw << List.arrNorm[i].word << "\n";
 		fw << List.arrNorm[i].value << "\n";
-		fw << List.arrNorm[i].name << "\n";
 	}
 
 	fw.close();
@@ -76,4 +74,5 @@ void FreeIDFList(IDF_list &List)
 	List.arrNorm = nullptr;
 	List.capacity = 0;
 	List.size = 0;
+	List.numFile = 0;
 }
