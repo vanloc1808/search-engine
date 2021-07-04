@@ -214,3 +214,51 @@ void createMetadata(string folderDataset) {
 
 	subFol.close();
 }
+
+IDF_list createIDF(string folderPath) {
+	string directory = folderPath + ".txt"; // for example, metadata\Am nhac -> metadata\Am nhac.txt
+	string fileName = "";
+	string folderName = "";
+	for (int i = folderPath.length() - 5;; i--) { //we skip four character ".txt"
+		folderName += folderPath[i];
+	}
+	std::reverse(folderName.begin(), folderName.end());
+	ifstream path(folderPath, ios::in);
+	string* strArr = NULL;
+	strArr = new string[1000];
+	IDF_list idfL;
+	IDFListInit(idfL);
+	int size = 0;// number of files
+	int nWords = 0; //number of words
+	while (getline(path, fileName)) {
+		if (fileName.length() == 0) {
+			continue;
+		}
+		size++;
+		string tfPath = folderPath + fileName + ".tf";
+		TF_list tfL;
+		LoadTFList((char*)tfPath.c_str(), tfL);
+		for (int i = 0; i < tfL.size; i++) {
+			string tempStr = tfL.arrNorm[i].word;
+			if (tempStr.length() == 0) {
+				continue;
+			}
+			nWords++;
+			if (idfL.size == idfL.capacity) {
+				idfL.capacity += 1000;
+				string* temp = new string[idfL.capacity];
+				for (int j = 0; j < idfL.capacity - 1000; j++) {
+					temp[j] = strArr[j];
+				}
+				delete[]strArr;
+				strArr = temp;
+			}
+			strArr[idfL.size] = tempStr;
+			idfL.size++;
+		}
+	}
+	sort_multiThread(strArr, idfL.size);
+	IDFList_Input(idfL, folderName, size, strArr, nWords);
+	path.close();
+	return idfL;
+}
