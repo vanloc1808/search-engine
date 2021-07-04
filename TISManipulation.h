@@ -7,3 +7,4 @@ void sort_String(string*, int n); // Increasingly!
 int bSearch_TF(TF_list, string);
 void TFList_Input(TF_list& List, string* data, int n);
 void sort_multiThread(string* arr, int n);
+void IDFList_Input(IDF_list& List, string name, int size, string* data, int n);

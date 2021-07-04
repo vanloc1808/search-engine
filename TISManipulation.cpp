@@ -87,3 +87,23 @@ void TFList_Input(TF_list& List, string* data, int n) // data is sorted increasi
 		count = 0;
 	}
 }
+
+void IDFList_Input(IDF_list& List, string name, int size, string* data, int n) // data is sorted increasingly
+{
+	int count = 0;
+	for (int i = 0; i < n - 1; i++)
+	{
+		count++;
+		if (data[i] != data[i + 1]) {
+			IDF idf{ data[i], log10(size / count), name };
+			addIDF(List, idf);
+			count = 0;
+		}
+	}
+	if (count > 0)
+	{
+		IDF idf{ data[n - 1], log10(size / count), name };
+		addIDF(List, idf);
+		count = 0;
+	}
+}
