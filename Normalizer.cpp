@@ -14,12 +14,12 @@ wchar_t inverseMap[] = { L'a',L'á',L'à',L'ả',L'ã',L'ạ',L'â',L'ấ',L'ầ
   L'u',L'ú',L'ù',L'ủ',L'ũ', L'ụ', L'ư', L'ứ', L'ừ', L'ử', L'ự', L'ữ', \
   L'b',L'c',L'đ',L'd',L'f',L'g',L'h',L'j',L'k',L'l',L'm',L'n',L'p',L'q',L'r',L's',L't',L'v',L'w',L'x',L'y',L'ý',L'ỳ',L'ỷ',L'ỹ',L'ỵ',L'z' };
 
-string telexMap[] = { "a","as","af","ar","ax","aj","aa","aas","aaf","aar","aax","aaj","aw","aws","awf","awr","awx","awj", \
-  "e","ee","ees","eef","eer","eex","eej","es","ef","er","ex","ej", \
-  "i","is","if","ir","ix","ij", \
-  "o","os","of","or","ox","oj","oo","oos","oof","oor","oox","ooj","ows","owf","owr","owx","owj","ow", \
-  "u","us","uf","ur","ux","uj","uw","uws","uwf","uwr","uwj","uwx", \
-  "b","c","dd","d","f","g","h","j","k","l","m","n","p","q","r","s","t","v","w","x","y","ys","yf","yr","yx","yj","z" };
+//string telexMap[] = { "a","as","af","ar","ax","aj","aa","aas","aaf","aar","aax","aaj","aw","aws","awf","awr","awx","awj", \
+//  "e","ee","ees","eef","eer","eex","eej","es","ef","er","ex","ej", \
+//  "i","is","if","ir","ix","ij", \
+//  "o","os","of","or","ox","oj","oo","oos","oof","oor","oox","ooj","ows","owf","owr","owx","owj","ow", \
+//  "u","us","uf","ur","ux","uj","uw","uws","uwf","uwr","uwj","uwx", \
+//  "b","c","dd","d","f","g","h","j","k","l","m","n","p","q","r","s","t","v","w","x","y","ys","yf","yr","yx","yj","z" };
 
 wchar_t inverseCapitalMap[] = { L'A',L'Á',L'À',L'Ả',L'Ã',L'Ạ',L'Â',L'Ấ',L'Ầ',L'Ẩ',L'Ẫ',L'Ậ',L'Ă',L'Ắ',L'Ằ',L'Ẳ',L'Ẵ',L'Ặ', \
   L'E',L'Ê',L'Ế',L'Ề',L'Ể',L'Ễ', L'Ệ', L'É', L'È', L'Ẻ', L'Ẽ', L'Ẹ', \
@@ -37,7 +37,7 @@ char normalMap[] = { 'a','a','a','a','a','a','a','a','a','a','a','a','a','a','a'
 
 
 
-string VEconvert(wstring source) {
+string VEconvert(wstring source) { // Todo: include numbers
   string result = "";
   for(unsigned int i = 0; i < source.length(); i++) {
     int pos = 0;
@@ -51,21 +51,21 @@ string VEconvert(wstring source) {
   return result;
 }
 
-string VEconvert_telex(wstring source) {
-	string result = "";
-	for (unsigned int i = 0; i < source.length(); i++) {
-		int pos = 0;
-		wchar_t t = source[i];
-		for (; pos < 93 && t != inverseMap[pos] && t != inverseCapitalMap[pos]; pos++);
-		if (pos == 93) {
-			if (L'!' <= t && t <= L'/') continue;
-			result += t;
-			continue;
-		}
-		result += telexMap[pos];
-	}
-	return result;
-}
+//string VEconvert_telex(wstring source) {
+//	string result = "";
+//	for (unsigned int i = 0; i < source.length(); i++) {
+//		int pos = 0;
+//		wchar_t t = source[i];
+//		for (; pos < 93 && t != inverseMap[pos] && t != inverseCapitalMap[pos]; pos++);
+//		if (pos == 93) {
+//			if (L'!' <= t && t <= L'/') continue;
+//			result += t;
+//			continue;
+//		}
+//		result += telexMap[pos];
+//	}
+//	return result;
+//}
 
 //#pragma warning(disable:4996)
 

@@ -8,6 +8,7 @@
 #include "FileProgression.h"
 #include <time.h>
 #include "IDF.h"
+#include "TF.h"
 
 using namespace std;
 
@@ -15,7 +16,11 @@ int main()
 {
     //string* subFolderName;
     //fileDirecProgression("new test"/*, subFolderName*/);
-    fileInput();
+    //fileInput();
+
+	IDF_list idf = createIDF("metadata\\Am nhac");
+	
+
     cout << (double)clock() / CLOCKS_PER_SEC << endl;
     return 0;
 }

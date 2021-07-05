@@ -31,7 +31,7 @@ void LoadTFList(char *filename, TF_list& List)
 {
 	ifstream fr(filename, ios::in);
 
-	FreeTFList(List);
+	//FreeTFList(List);
 	
 	fr >> List.capacity >> List.size >> List.totalCount;
 	fr.ignore();
@@ -58,7 +58,7 @@ void SaveTFList(char *filename, TF_list List)
 	ofstream fw(filename, ios::out);
 
 	fw << List.size << "\n" << List.size << "\n" << List.totalCount << "\n";
-	for (int i = 0; i < List.capacity; i++)
+	for (int i = 0; i < List.size; i++)
 	{
 		fw << List.arrNorm[i].word << "\n";
 		fw << List.arrNorm[i].count << "\n";

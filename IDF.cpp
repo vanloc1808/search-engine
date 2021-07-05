@@ -32,7 +32,7 @@ void LoadIDFList(char *filename, IDF_list &List)
 {
 	ifstream fr(filename, ios::in);
 
-	FreeIDFList(List);
+	//FreeIDFList(List);
 
 	fr >> List.capacity >> List.size >> List.numFile;
 	string s = "";
@@ -46,7 +46,7 @@ void LoadIDFList(char *filename, IDF_list &List)
 		List.arrNorm[i].word = s;
 		getline(fr, s);
 		if (s.length() > 0 && s.back() == '\r') s.pop_back();
-		List.arrNorm[i].value = stod(s);
+		List.arrNorm[i].value = stoi(s);
 	}
 
 	fr.close();

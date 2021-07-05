@@ -167,7 +167,7 @@ TF_list createTF(string filePath) {
 	wifstream fin(filePath, ios::in);
 	fin.imbue(locale(locale::empty(), new codecvt_utf16<wchar_t, 0x10ffff, std::little_endian>));
 	wstring s;
-	string* strArr = NULL;
+	string* strArr = nullptr;
 	strArr = new string[1000];
 	int size = 0;
 	int capacity = 1000;
@@ -176,8 +176,8 @@ TF_list createTF(string filePath) {
 		if (tempStr.length() == 0) {
 			continue;
 		}
-		if (L.size == L.capacity) {
-			L.capacity += 1000;
+		if (size == capacity) {
+			capacity += 1000;
 			string* temp = new string[capacity];
 			for (int i = 0; i < capacity - 1000; i++) {
 				temp[i] = strArr[i];
@@ -191,6 +191,7 @@ TF_list createTF(string filePath) {
 	sort_multiThread(strArr, size);
 	TFList_Input(L, strArr, size);
 	fin.close();
+	delete[] strArr;
 	return L;
 }
 
@@ -198,15 +199,13 @@ void createMetadata(string folderDataset) {
 	ifstream subFol(SUBFOLDER_NAME, ios::in);
 	string folderName = "";
 	while (getline(subFol, folderName)) {
-		string toCreate = "mkdir \""  METADATA_NAME + '\\' + folderName + "\"";
+		string toCreate = string("mkdir \""  METADATA_NAME) + '\\' + folderName + "\"";
 		system(toCreate.c_str());
-		string listFile = "" METADATA_NAME "\\" + folderName + ".txt";
+		string listFile = string("" METADATA_NAME "\\") + folderName + ".txt";
 		ifstream fr(listFile, ios::in);
 		string fileName = "";
 		while (getline(fr, fileName)) {
-			string tfPath = "" METADATA_NAME "\\" + folderName + '\\' + fileName + ".tf";
-			/*ofstream tf(tfName);
-			tf.close();*/
+			string tfPath = string("" METADATA_NAME "\\") + folderName + '\\' + fileName + ".tf";
 			string filePath = folderDataset + "\\" + folderName + "\\" + fileName;
 			TF_list L = createTF(filePath);
 			SaveTFList((char*)tfPath.c_str(), L);
@@ -214,7 +213,6 @@ void createMetadata(string folderDataset) {
 		}
 		fr.close();
 	}
-
 	subFol.close();
 }
 
@@ -231,9 +229,9 @@ IDF_list createIDF(string folderPath) {
 	std::reverse(folderName.begin(), folderName.end());
 	ifstream path(directory, ios::in);
 	string* strArr = NULL;
-	strArr = new string[1000];
+	strArr = new string[10000];
 	int size = 0;
-	int capacity = 1000;
+	int capacity = 10000;
 	IDF_list idfL;
 	IDFListInit(idfL);
 	int nFiles= 0;// number of files
@@ -243,7 +241,7 @@ IDF_list createIDF(string folderPath) {
 			continue;
 		}
 		nFiles++;
-		string tfPath = folderPath + fileName + ".tf";
+		string tfPath = folderPath + "\\" + fileName + ".tf";
 		TF_list tfL;
 		LoadTFList((char*)tfPath.c_str(), tfL);
 		for (int i = 0; i < tfL.size; i++) {
@@ -253,9 +251,9 @@ IDF_list createIDF(string folderPath) {
 			}
 			nWords++;
 			if (size==capacity) {
-				capacity += 1000;
+				capacity += 10000;
 				string* temp = new string[capacity];
-				for (int j = 0; j < capacity - 1000; j++) {
+				for (int j = 0; j < capacity - 10000; j++) {
 					temp[j] = strArr[j];
 				}
 				delete[]strArr;
@@ -269,5 +267,6 @@ IDF_list createIDF(string folderPath) {
 	sort_multiThread(strArr, size);
 	IDFList_Input(idfL, nFiles, strArr, nWords);
 	path.close();
+	delete[] strArr;
 	return idfL;
 }

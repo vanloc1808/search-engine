@@ -1,11 +1,13 @@
 #pragma once
 
 #include <iostream>
-
+#include "TF.h"
+#include "IDF.h"
 using namespace std;
 
 void getSubFolderDirectory(string folder);
-
+void createMetadata(string folderDataset);
+IDF_list createIDF(string folderPath);
 void getSubFolderName(string folder/*, string*& subFolderName, int& idx*/);
 
 void getFileDirectory(string folder/*, string* subFolderName, int idx*/);
