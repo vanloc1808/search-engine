@@ -212,6 +212,11 @@ void createMetadata(string folderDataset) {
 			FreeTFList(L);
 		}
 		fr.close();
+		string path = string("metadata\\") + folderName;
+		IDF_list idf = createIDF(path);
+		string idffileName = path + string(".idf");
+		SaveIDFList((char*)idffileName.c_str(), idf);
+		FreeIDFList(idf);
 	}
 	subFol.close();
 }

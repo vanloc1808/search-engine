@@ -17,9 +17,21 @@ int main()
     //string* subFolderName;
     //fileDirecProgression("new test"/*, subFolderName*/);
     //fileInput();
+    createMetadata("new test");
+    /*ifstream subfol("SubFolderName.txt", ios::in);
+    string folder = "";
+    int x = 0;
+    char file[30];
+    while (getline(subfol, folder)) {
+        string path = string("metadata\\") + folder;
+        IDF_list idf = createIDF(path);
+        sprintf(file, "metadata\\%d.idf", x);
+        SaveIDFList(file, idf);
+        x++;
+        FreeIDFList(idf);
+    }
 
-	IDF_list idf = createIDF("metadata\\Am nhac");
-	
+    subfol.close();*/
 
     cout << (double)clock() / CLOCKS_PER_SEC << endl;
     return 0;
