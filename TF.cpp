@@ -67,8 +67,6 @@ void SaveTFList(char *filename, TF_list List)
 	fw.close();
 }
 
-
-
 void FreeTFList(TF_list &List)
 {
 	delete[] List.arrNorm;
@@ -76,4 +74,24 @@ void FreeTFList(TF_list &List)
 	List.totalCount = 0;
 	List.capacity = 0;
 	List.size = 0;
+}
+
+void TFList_Input(TF_list& List, string* data, int n) // data is sorted increasingly
+{
+	int count = 0;
+	for (int i = 0; i < n - 1; i++)
+	{
+		count++;
+		if (data[i] != data[i + 1]) {
+			TF t{ data[i], count };
+			addTF(List, t);
+			count = 0;
+		}
+	}
+	if (count > 0)
+	{
+		TF t{ data[n - 1], count };
+		addTF(List, t);
+		count = 0;
+	}
 }

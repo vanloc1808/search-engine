@@ -12,7 +12,7 @@ wchar_t inverseMap[] = { L'a',L'á',L'à',L'ả',L'ã',L'ạ',L'â',L'ấ',L'ầ
   L'i',L'í',L'ì',L'ỉ',L'ĩ', L'ị', \
   L'o',L'ó',L'ò',L'ỏ',L'õ', L'ọ', L'ô', L'ố', L'ồ', L'ổ', L'ỗ', L'ộ', L'ớ', L'ờ', L'ở', L'ỡ', L'ợ', L'ơ', \
   L'u',L'ú',L'ù',L'ủ',L'ũ', L'ụ', L'ư', L'ứ', L'ừ', L'ử', L'ự', L'ữ', \
-  L'b',L'c',L'đ',L'd',L'f',L'g',L'h',L'j',L'k',L'l',L'm',L'n',L'p',L'q',L'r',L's',L't',L'v',L'w',L'x',L'y',L'ý',L'ỳ',L'ỷ',L'ỹ',L'ỵ',L'z' };
+  L'b',L'c',L'đ',L'd',L'f',L'g',L'h',L'j',L'k',L'l',L'm',L'n',L'p',L'q',L'r',L's',L't',L'v',L'w',L'x',L'y',L'ý',L'ỳ',L'ỷ',L'ỹ',L'ỵ',L'z'};
 
 //string telexMap[] = { "a","as","af","ar","ax","aj","aa","aas","aaf","aar","aax","aaj","aw","aws","awf","awr","awx","awj", \
 //  "e","ee","ees","eef","eer","eex","eej","es","ef","er","ex","ej", \
@@ -43,7 +43,7 @@ string VEconvert(wstring source) { // Todo: include numbers
     int pos = 0;
 	wchar_t t = source[i];
 	for (; pos < 93 && t != inverseMap[pos] && t != inverseCapitalMap[pos]; pos++);
-	if (pos == 93) {
+	if ((pos == 93) && !((48 <= t) && (t <= 57))) {
 		continue;
 	}
     result += normalMap[pos];

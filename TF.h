@@ -20,3 +20,5 @@ void addTF(TF_list&, TF);
 void LoadTFList(char*, TF_list&);
 void SaveTFList(char*, TF_list);
 void FreeTFList(TF_list&);
+
+void TFList_Input(TF_list&, string*, int);

@@ -20,3 +20,5 @@ void addIDF(IDF_list&, IDF);
 void LoadIDFList(char*, IDF_list&);
 void SaveIDFList(char*, IDF_list);
 void FreeIDFList(IDF_list&);
+
+void IDFList_Input(IDF_list&, int, string*, int);

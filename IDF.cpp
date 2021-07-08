@@ -76,3 +76,29 @@ void FreeIDFList(IDF_list &List)
 	List.size = 0;
 	List.numFile = 0;
 }
+
+void IDFList_Input(IDF_list& List, int numFile, string* data, int n) // data is sorted increasingly
+{
+	List.numFile = numFile;
+	int count = 0;
+	for (int i = 0; i < n - 1; i++)
+	{
+		count++;
+		if (data[i] != data[i + 1]) {
+			if (count >= numFile) // idf = 0
+			{
+				count = 0;
+				continue;
+			}
+			IDF idf{ data[i], count };
+			addIDF(List, idf);
+			count = 0;
+		}
+	}
+	if (count > 0 && count < numFile)
+	{
+		IDF idf{ data[n - 1], count };
+		addIDF(List, idf);
+		count = 0;
+	}
+}
