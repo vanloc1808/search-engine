@@ -16,6 +16,7 @@
 #include "FileProgression.h"
 #include "TF.h"
 #include "Utility.h"
+#include "InputProcess.h"
 
 using namespace std;
 
@@ -61,22 +62,52 @@ TF_list createTF(string filePath) {
 	return L;
 }
 
-void createMetadata(string folderDataset) 
+void newFileListToNewFolder(string**& fileList, int nFolders) {
+	string** temp = new string * [nFolders];
+	for (int i = 0; i < nFolders - 1; i++) {
+		temp[i] = fileList[i];
+	}
+	delete[]fileList;
+	fileList = temp;
+}
+
+void newFileListIfNewFile(string**& fileList, int nFolders, int nFiles) {
+	string** temp = new string * [nFolders];
+	for (int i = 0; i < nFolders - 1; i++) {
+		temp[i] = fileList[i];
+	}
+	temp[nFolders - 1] = new string[nFiles];
+	for (int i = 0; i < nFiles - 1; i++) {
+		temp[nFolders - 1][i] = fileList[nFolders - 1][i];
+	}
+	delete[]fileList;
+	fileList = temp;
+}
+
+void createMetadata(string folderDataset, string**& fileList, int& nFolders) 
 {
 	initString(strArr);
 	prepareFile(folderDataset);
 
 	ifstream subFol(SUBFOLDER_NAME, ios::in);
 	string folderName = "";
+	fileList = nullptr;
+	nFolders = 0;
 
 	while (getline(subFol, folderName)) 
 	{
+		nFolders++;
+		newFileListToNewFolder(fileList, nFolders);
+		int nFiles = 0;
 		string listFile = string("" METADATA_NAME "\\") + folderName + ".txt";
 		ifstream fr(listFile, ios::in);
 		string fileName = "";
 
 		while (getline(fr, fileName)) 
 		{
+			nFiles++;
+			newFileListIfNewFile(fileList, nFolders, nFiles);
+			fileList[nFolders - 1][nFiles - 1] = folderName + '\\' + fileName;
 			string tfPath = string("" METADATA_NAME "\\") + folderName + '\\' + fileName + ".tf";
 			string filePath = folderDataset + "\\" + folderName + "\\" + fileName;
 			TF_list L = createTF(filePath);

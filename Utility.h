@@ -28,3 +28,4 @@ string extractPath(string);
 void evalCommand(string);
 void sort_multiThread(StringArray&);
 int bSearch_TF(TF_list, string);
+int bSearch_IDF(IDF_list List, string key);

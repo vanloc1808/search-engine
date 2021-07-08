@@ -1,6 +1,7 @@
 #include "Utility.h"
 #include <fstream>
 #include <thread>
+#include "IDF.h"
 using namespace std;
 
 const int BLOCK = 1000;
@@ -152,7 +153,7 @@ int bSearch_TF(TF_list List, string key) // Find how many word in document
 	while (l <= h) {
 		int m = (l + h) / 2;
 		if (key == List.arrNorm[m].word)
-			return List.arrNorm[m].count;
+			return m;
 		if (key < List.arrNorm[m].word) {
 			h = m - 1;
 		}
@@ -160,5 +161,23 @@ int bSearch_TF(TF_list List, string key) // Find how many word in document
 			l = m + 1;
 		}
 	}
-	return 0;
+	return -1;
+}
+
+int bSearch_IDF(IDF_list List, string key) 
+{
+	int l = 0;
+	int h = List.size - 1;
+	while (l <= h) {
+		int m = (l + h) / 2;
+		if (key == List.arrNorm[m].word)
+			return m;
+		if (key < List.arrNorm[m].word) {
+			h = m - 1;
+		}
+		else {
+			l = m + 1;
+		}
+	}
+	return -1;
 }
