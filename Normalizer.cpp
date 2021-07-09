@@ -51,34 +51,3 @@ string VEconvert(wstring source) { // Todo: include numbers
   return result;
 }
 
-//string VEconvert_telex(wstring source) {
-//	string result = "";
-//	for (unsigned int i = 0; i < source.length(); i++) {
-//		int pos = 0;
-//		wchar_t t = source[i];
-//		for (; pos < 93 && t != inverseMap[pos] && t != inverseCapitalMap[pos]; pos++);
-//		if (pos == 93) {
-//			if (L'!' <= t && t <= L'/') continue;
-//			result += t;
-//			continue;
-//		}
-//		result += telexMap[pos];
-//	}
-//	return result;
-//}
-
-//#pragma warning(disable:4996)
-
-// int main()
-// {
-	// wifstream fin("input.txt");
-	// fin.imbue(locale(locale::empty(), new codecvt_utf8<wchar_t>));
-	// wstring s;
-	// getline(fin, s);
-
-	// cout << VEconvert(s) << endl;
-
-	// fin.close();
-
-    // return 0;
-// }

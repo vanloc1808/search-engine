@@ -10,3 +10,5 @@ void createMetadata(string folderDataset);
 void prepareFile(string folderPath);
 IDF_list createIDF(string folderPath);
 void loadToRAM();
+void test(string key);
+void testSentence(string sentence);

@@ -12,12 +12,12 @@
 #include <string.h>
 #include <fstream>
 #include <codecvt>
+#include <sstream>
 #include "Normalizer.h"
 #include "FileProgression.h"
 #include "TF.h"
 #include "IDF.h"
 #include "Utility.h"
-#include "InputProcess.h"
 
 using namespace std;
 
@@ -71,42 +71,16 @@ TF_list createTF(string filePath) {
 	return L;
 }
 
-// void newFileListToNewFolder(string**& fileList, int nFolders) {
-// 	string** temp = new string * [nFolders];
-// 	for (int i = 0; i < nFolders - 1; i++) {
-// 		temp[i] = fileList[i];
-// 	}
-// 	delete[]fileList;
-// 	fileList = temp;
-// }
-
-// void newFileListIfNewFile(string**& fileList, int nFolders, int nFiles) {
-// 	string** temp = new string * [nFolders];
-// 	for (int i = 0; i < nFolders - 1; i++) {
-// 		temp[i] = fileList[i];
-// 	}
-// 	temp[nFolders - 1] = new string[nFiles];
-// 	for (int i = 0; i < nFiles - 1; i++) {
-// 		temp[nFolders - 1][i] = fileList[nFolders - 1][i];
-// 	}
-// 	delete[]fileList;
-// 	fileList = temp;
-// }
-
-void createMetadata(string folderDataset/*, string**& fileList, int& nFolders*/) 
+void createMetadata(string folderDataset) 
 {
 	initString(strArr);
 	prepareFile(folderDataset);
 
 	ifstream subFol(SUBFOLDER_NAME, ios::in);
 	string folderName = "";
-	//fileList = nullptr;
-	//nFolders = 0;
 
 	while (getline(subFol, folderName)) 
 	{
-		//nFolders++;
-		//newFileListToNewFolder(fileList, nFolders);
 		int nFiles = 0;
 		string listFile = string("" METADATA_NAME "\\") + folderName + ".txt";
 		ifstream fr(listFile, ios::in);
@@ -115,8 +89,6 @@ void createMetadata(string folderDataset/*, string**& fileList, int& nFolders*/)
 		while (getline(fr, fileName)) 
 		{
 			nFiles++;
-			//newFileListIfNewFile(fileList, nFolders, nFiles);
-			//fileList[nFolders - 1][nFiles - 1] = folderName + '\\' + fileName;
 			string tfPath = string("" METADATA_NAME "\\") + folderName + '\\' + fileName + ".tf";
 			string filePath = folderDataset + "\\" + folderName + "\\" + fileName;
 			TF_list L = createTF(filePath);
@@ -247,4 +219,66 @@ IDF_list createIDF(string folderPath)
 	strArr.size = 0;
 
 	return idfL;
+}
+
+void test(string key) {
+	ResponseData res = queryRequest(key);
+	sortResponse(res);
+	fileData* listRes = res.file;
+	int size = res.size;
+	for (int i = 0; i < size; i++) {
+		fileData thisFile = listRes[i];
+		cout << fileList[thisFile.posFolder][thisFile.posFile] << " in folder " << folderList[thisFile.posFolder] << ". ";
+		cout << "The value is: " << thisFile.value << "\n";
+	}
+}
+
+int findMaxSize(ResponseData* respArr, int arrSize) {
+	ResponseData res = respArr[0];
+	int idx = 0;
+	for (int i = 1; i < arrSize; i++) {
+		ResponseData thisRes = respArr[i];
+		if (res.size < thisRes.size) {
+			res = thisRes;
+			idx = i;
+		}
+	}
+	return idx;
+}
+
+void testSentence(string sentence) {
+	istringstream oss(sentence);
+	string temp;
+	StringArray stringArr;
+	initString(stringArr);
+	while (oss >> temp) {
+		addString(stringArr,temp);
+	}
+	int size = stringArr.size;
+	ResponseData* resResponse = new ResponseData[size];
+	for (int i = 0; i < size; i++) {
+		resResponse[i] = queryRequest(stringArr.Array[i]);
+	}
+	int maxIndex = findMaxSize(resResponse, size);
+	ResponseData rd = resResponse[maxIndex];
+	for (int i = 0; i < size; i++) {
+		if (i == maxIndex) {
+			continue;
+		}
+		intersectResponse(rd, resResponse[i]);
+	}
+	sortResponse(rd);
+	int resSize = rd.size;
+	fileData* resFiles = rd.file;
+	if (resSize > 20) {
+		resSize = 20;
+	}
+	for (int i = 0; i < resSize; i++) {
+		fileData thisFile = resFiles[i];
+		cout << fileList[thisFile.posFolder][thisFile.posFile] << " in folder " << folderList[thisFile.posFolder] << ". ";
+		cout << "The value is: " << thisFile.value << ". ";
+		cout << "Fit " << thisFile.intersectionCount << " words.\n";
+	}
+	delete[]resResponse;
+	deleteArray(stringArr);
 }

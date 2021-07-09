@@ -1,3 +1,5 @@
+#define _CRT_SECURE_NO_WARNINGS
+
 #include "Utility.h"
 #include <fstream>
 #include <thread>
@@ -248,11 +250,11 @@ void swap(fileData &a, fileData &b)
 
 bool cmp(fileData A, fileData B)
 {
-	if(A.intersectionCount < B.intersectionCount)
+	if(A.intersectionCount > B.intersectionCount)
 		return true;
 	if(A.intersectionCount == B.intersectionCount)
 	{
-		return A.value < B.value;
+		return A.value > B.value;
 	}
 	return false;
 }
@@ -284,5 +286,5 @@ void quickSort(fileData* arr, int l, int r)
 
 void sortResponse(ResponseData &rd)
 {
-
+	quickSort(rd.file, 0, rd.size - 1);
 }
