@@ -15,12 +15,21 @@
 #include "Normalizer.h"
 #include "FileProgression.h"
 #include "TF.h"
+#include "IDF.h"
 #include "Utility.h"
 #include "InputProcess.h"
 
 using namespace std;
 
 StringArray strArr;
+
+string* folderList = nullptr;
+int folderCount = 0;
+
+string** fileList = nullptr;
+int* fileCount = nullptr;
+
+folderData* folder_data;
 
 void prepareFile(string folderPath)
 {
@@ -62,42 +71,42 @@ TF_list createTF(string filePath) {
 	return L;
 }
 
-void newFileListToNewFolder(string**& fileList, int nFolders) {
-	string** temp = new string * [nFolders];
-	for (int i = 0; i < nFolders - 1; i++) {
-		temp[i] = fileList[i];
-	}
-	delete[]fileList;
-	fileList = temp;
-}
+// void newFileListToNewFolder(string**& fileList, int nFolders) {
+// 	string** temp = new string * [nFolders];
+// 	for (int i = 0; i < nFolders - 1; i++) {
+// 		temp[i] = fileList[i];
+// 	}
+// 	delete[]fileList;
+// 	fileList = temp;
+// }
 
-void newFileListIfNewFile(string**& fileList, int nFolders, int nFiles) {
-	string** temp = new string * [nFolders];
-	for (int i = 0; i < nFolders - 1; i++) {
-		temp[i] = fileList[i];
-	}
-	temp[nFolders - 1] = new string[nFiles];
-	for (int i = 0; i < nFiles - 1; i++) {
-		temp[nFolders - 1][i] = fileList[nFolders - 1][i];
-	}
-	delete[]fileList;
-	fileList = temp;
-}
+// void newFileListIfNewFile(string**& fileList, int nFolders, int nFiles) {
+// 	string** temp = new string * [nFolders];
+// 	for (int i = 0; i < nFolders - 1; i++) {
+// 		temp[i] = fileList[i];
+// 	}
+// 	temp[nFolders - 1] = new string[nFiles];
+// 	for (int i = 0; i < nFiles - 1; i++) {
+// 		temp[nFolders - 1][i] = fileList[nFolders - 1][i];
+// 	}
+// 	delete[]fileList;
+// 	fileList = temp;
+// }
 
-void createMetadata(string folderDataset, string**& fileList, int& nFolders) 
+void createMetadata(string folderDataset/*, string**& fileList, int& nFolders*/) 
 {
 	initString(strArr);
 	prepareFile(folderDataset);
 
 	ifstream subFol(SUBFOLDER_NAME, ios::in);
 	string folderName = "";
-	fileList = nullptr;
-	nFolders = 0;
+	//fileList = nullptr;
+	//nFolders = 0;
 
 	while (getline(subFol, folderName)) 
 	{
-		nFolders++;
-		newFileListToNewFolder(fileList, nFolders);
+		//nFolders++;
+		//newFileListToNewFolder(fileList, nFolders);
 		int nFiles = 0;
 		string listFile = string("" METADATA_NAME "\\") + folderName + ".txt";
 		ifstream fr(listFile, ios::in);
@@ -106,8 +115,8 @@ void createMetadata(string folderDataset, string**& fileList, int& nFolders)
 		while (getline(fr, fileName)) 
 		{
 			nFiles++;
-			newFileListIfNewFile(fileList, nFolders, nFiles);
-			fileList[nFolders - 1][nFiles - 1] = folderName + '\\' + fileName;
+			//newFileListIfNewFile(fileList, nFolders, nFiles);
+			//fileList[nFolders - 1][nFiles - 1] = folderName + '\\' + fileName;
 			string tfPath = string("" METADATA_NAME "\\") + folderName + '\\' + fileName + ".tf";
 			string filePath = folderDataset + "\\" + folderName + "\\" + fileName;
 			TF_list L = createTF(filePath);
@@ -125,6 +134,74 @@ void createMetadata(string folderDataset, string**& fileList, int& nFolders)
 	subFol.close();
 
 	deleteArray(strArr);
+}
+
+void loadToRAM()
+{
+	initString(strArr);
+
+	loadTextToArray(strArr, SUBFOLDER_NAME);
+
+	folderCount = strArr.size;
+	folderList = new string[folderCount];
+	fileList = new string*[folderCount];
+	fileCount = new int[folderCount];
+
+	folder_data = new folderData[folderCount];
+
+	for(int i = 0; i < folderCount; i++)
+		folderList[i] = strArr.Array[i];
+
+	strArr.size = 0;
+
+	for(int i = 0; i < folderCount; i++)
+	{
+		string filePath = string(METADATA_NAME) + "\\" + folderList[i];
+		loadTextToArray(strArr, filePath + ".txt");
+		
+		LoadIDFList(filePath + ".idf", folder_data[i].idfL);
+		folder_data[i].tfLArr = new TF_list[strArr.size];
+
+		fileCount[i] = strArr.size;
+		fileList[i] = new string[strArr.size];
+
+		for(int j = 0; j < strArr.size; j++)
+		{
+			fileList[i][j] = strArr.Array[j];
+			LoadTFList(filePath + "\\" + strArr.Array[j] + ".tf", folder_data[i].tfLArr[j]);
+		}
+	}
+
+	deleteArray(strArr);
+}
+
+ResponseData queryRequest(string word) // singular word
+{
+	int posIDF = 0;
+	int posTF = 0;
+
+	double idfValue = 0.f;
+	double tfValue = 0.f;
+
+	ResponseData rd;
+	initResponse(rd);
+
+	for(int i = 0; i < folderCount; i++) 
+	{
+		if((posIDF = bSearch_IDF(folder_data[i].idfL, word)) != -1) // If found
+		{
+			idfValue = getIDFValue(folder_data[i].idfL, posIDF);
+			for(int j = 0; j < fileCount[i]; j++)
+			{
+				if((posTF = bSearch_TF(folder_data[i].tfLArr[j], word)) != -1)
+				{
+					tfValue = getTFValue(folder_data[i].tfLArr[j], posTF);
+					addResponse(rd, fileData{i, j, idfValue * tfValue, 1});
+				}
+			}
+		}
+	}
+	return rd;
 }
 
 IDF_list createIDF(string folderPath) 
@@ -150,7 +227,7 @@ IDF_list createIDF(string folderPath)
 		string tfPath = folderPath + "\\" + fileName + ".tf";
 
 		TF_list tfL;
-		LoadTFList((char*)tfPath.c_str(), tfL);
+		LoadTFList(tfPath, tfL);
 
 		for (int i = 0; i < tfL.size; i++) 
 		{

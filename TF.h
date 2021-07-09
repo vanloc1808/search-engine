@@ -15,10 +15,12 @@ struct TF_list {
 	TF* arrNorm;
 };
 
+double getTFValue(TF_list List, int i);
+
 void TFListInit(TF_list&);
 void addTF(TF_list&, TF);
-void LoadTFList(char*, TF_list&);
-void SaveTFList(char*, TF_list);
+void LoadTFList(string, TF_list&);
+void SaveTFList(string, TF_list);
 void FreeTFList(TF_list&);
 
 void TFList_Input(TF_list&, string*, int);

@@ -3,6 +3,13 @@
 using namespace std;
 #pragma warning(disable:4996)
 
+double getTFValue(TF_list List, int i)
+{
+	if(i >= List.size)
+		return 0;
+	return ((double)List.arrNorm[i].count / List.totalCount);
+}
+
 void TFListInit(TF_list &List)
 {
 	List.size = 0;
@@ -27,7 +34,7 @@ void addTF(TF_list &List, TF data)
 	List.arrNorm[List.size++] = data;
 }
 
-void LoadTFList(char *filename, TF_list& List)
+void LoadTFList(string filename, TF_list& List)
 {
 	ifstream fr(filename, ios::in);
 
@@ -53,7 +60,7 @@ void LoadTFList(char *filename, TF_list& List)
 	fr.close();
 }
 
-void SaveTFList(char *filename, TF_list List)
+void SaveTFList(string filename, TF_list List)
 {
 	ofstream fw(filename, ios::out);
 

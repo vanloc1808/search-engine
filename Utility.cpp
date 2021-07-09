@@ -40,6 +40,18 @@ void deleteArray(StringArray &sa)
 	sa.size = 0;
 }
 
+void loadTextToArray(StringArray &sa, string filename)
+{
+	ifstream fin(filename, ios::in);
+	sa.size = 0;
+	string temp = "";
+	while(getline(fin, temp)) 
+	{
+		addString(sa, temp);
+	}
+	fin.close();
+}
+
 // ------------------------------------
 
 void makeFolderWrapper(string path_to_folder)
@@ -95,6 +107,8 @@ string extractPath(string path)
 
 // ---------------------------------
 
+
+
 void evalCommand(string command)
 {
 	system(command.c_str());
@@ -146,7 +160,7 @@ void sort_multiThread(StringArray &sa)
 	delete[] temp;
 }
 
-int bSearch_TF(TF_list List, string key) // Find how many word in document
+int bSearch_TF(TF_list List, string key) 
 {
 	int l = 0;
 	int h = List.size - 1;
@@ -180,4 +194,95 @@ int bSearch_IDF(IDF_list List, string key)
 		}
 	}
 	return -1;
+}
+
+// ----------------------------------
+
+void initResponse(ResponseData &rd)
+{
+	rd.cap = INIT_SIZE;
+	rd.size = 0;
+	rd.file = new fileData[rd.cap];
+}
+
+void addResponse(ResponseData &rd, fileData f)
+{
+	if (rd.size == rd.cap) {
+		rd.cap += BLOCK;
+
+		fileData* temp = new fileData[rd.cap];
+		for (int i = 0; i < rd.size; i++)
+			temp[i] = rd.file[i];
+
+		delete[] rd.file;
+		rd.file = temp;
+	}
+	rd.file[rd.size++] = f;
+}
+
+void deleteResponse(ResponseData &rd)
+{
+	delete[] rd.file;
+	rd.cap = 0;
+	rd.size = 0;
+}
+
+void intersectResponse(ResponseData &dest, ResponseData sour)
+{
+	for(int i = 0; i < sour.size; i++)
+	{
+		for(int j = 0; j < dest.size; j++)
+		{
+			if(dest.file[j].posFolder == sour.file[i].posFolder && dest.file[j].posFile == sour.file[i].posFile)
+				dest.file[j].intersectionCount++;
+		}
+	}
+}
+
+void swap(fileData &a, fileData &b)
+{
+	fileData t = a;
+	a = b;
+	b = t;
+}
+
+bool cmp(fileData A, fileData B)
+{
+	if(A.intersectionCount < B.intersectionCount)
+		return true;
+	if(A.intersectionCount == B.intersectionCount)
+	{
+		return A.value < B.value;
+	}
+	return false;
+}
+
+int partition(fileData* arr, int l, int r)
+{
+	int i = l;
+	fileData pivot = arr[r];
+	for(int j = l; j < r; j++) {
+		if(cmp(arr[j], pivot))
+		{
+			swap(arr[j], arr[i]);
+			i++;
+		}
+	}
+	swap(arr[i], arr[r]);
+	return i;
+}
+
+void quickSort(fileData* arr, int l, int r)
+{
+	if(l < r)
+	{
+		int p = partition(arr, l, r);
+		quickSort(arr, l, p - 1);
+		quickSort(arr, p + 1, r);
+	}
+}
+
+void sortResponse(ResponseData &rd)
+{
+
 }

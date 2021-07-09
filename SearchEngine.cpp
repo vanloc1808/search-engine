@@ -10,7 +10,9 @@ using namespace std;
 
 int main()
 {
-	createMetadata("new test");
+	//createMetadata("new test");
+
+	loadToRAM();
 
     cout << (double)clock() / CLOCKS_PER_SEC << endl;
     return 0;

@@ -1,10 +1,18 @@
 #include "IDF.h"
 #include <stdio.h>
 #include <memory.h>
+#include <math.h>
 #include <fstream>
 using namespace std;
 
 #pragma warning(disable:4996)
+
+double getIDFValue(IDF_list List, int i)
+{
+	if(i >= List.size)
+		return 0;
+	return log10((double)List.numFile / List.arrNorm[i].value);
+}
 
 void IDFListInit(IDF_list &List)
 {
@@ -28,7 +36,7 @@ void addIDF(IDF_list &List, IDF data)
 	List.arrNorm[List.size++] = data;
 }
 
-void LoadIDFList(char *filename, IDF_list &List)
+void LoadIDFList(string filename, IDF_list &List)
 {
 	ifstream fr(filename, ios::in);
 
@@ -52,7 +60,7 @@ void LoadIDFList(char *filename, IDF_list &List)
 	fr.close();
 }
 
-void SaveIDFList(char *filename, IDF_list List)
+void SaveIDFList(string filename, IDF_list List)
 {
 	ofstream fw(filename, ios::out);
 
