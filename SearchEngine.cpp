@@ -3,6 +3,7 @@
 #include <string>
 #include <iostream>
 #include <time.h>
+#include <fstream>
 #include "FileProgression.h"
 
 
@@ -20,7 +21,7 @@ int main()
 	string sentence;
 	getline(cin, sentence);
 	testSentence(sentence);
-
+	
 	cout << (double)clock() / CLOCKS_PER_SEC << endl;
     return 0;
 }
