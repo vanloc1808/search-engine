@@ -5,6 +5,8 @@
 
 #define SUBFOLDER_NAME "FolderList.txt"
 
+#define INDEX_NAME "Index.txt"
+
 #include <stdio.h>
 #include <iostream>
 #include <Windows.h>
@@ -81,6 +83,7 @@ void createMetadata(string folderDataset)
 
 	while (getline(subFol, folderName)) 
 	{
+		cout << "Processing with folder " << folderName << "...\n";
 		int nFiles = 0;
 		string listFile = string("" METADATA_NAME "\\") + folderName + ".txt";
 		ifstream fr(listFile, ios::in);
@@ -246,7 +249,7 @@ int findMaxSize(ResponseData* respArr, int arrSize) {
 	return idx;
 }
 
-void testSentence(string sentence) {
+void searchSentence(string sentence) {
 	istringstream oss(sentence);
 	string temp;
 	StringArray stringArr;
@@ -276,9 +279,10 @@ void testSentence(string sentence) {
 	for (int i = 0; i < resSize; i++) {
 		fileData thisFile = resFiles[i];
 		cout << fileList[thisFile.posFolder][thisFile.posFile] << " in folder " << folderList[thisFile.posFolder] << ". ";
-		cout << "The value is: " << thisFile.value << ". ";
+		//cout << "The value is: " << thisFile.value << ". ";
 		cout << "Fit " << thisFile.intersectionCount << " words.\n";
 	}
 	delete[]resResponse;
 	deleteArray(stringArr);
 }
+

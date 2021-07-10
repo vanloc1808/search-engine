@@ -5,6 +5,7 @@
 #include <time.h>
 #include <fstream>
 #include "FileProgression.h"
+#include "UI.h"
 
 
 using namespace std;
@@ -13,15 +14,19 @@ int main()
 {
 	//createMetadata("new test");
 
-	loadToRAM();
+	/*loadToRAM();
 	cout << (double)clock() / CLOCKS_PER_SEC << endl;
 
-	cout << "Enter keyword.\n";
+	cout << "Enter keyword.\n";*/
 
-	string sentence;
+	/*string sentence;
 	getline(cin, sentence);
-	testSentence(sentence);
+	searchSentence(sentence);
+	*/
+
+	menu();
 	
+
 	cout << (double)clock() / CLOCKS_PER_SEC << endl;
     return 0;
 }
