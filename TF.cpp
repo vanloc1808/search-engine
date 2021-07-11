@@ -7,13 +7,13 @@ double getTFValue(TF_list List, int i)
 {
 	if(i >= List.size)
 		return 0;
-	return ((double)List.arrNorm[i].count / List.totalCount);
+	return 0.5 + 0.5 * ((double)List.arrNorm[i].count / List.maxCount);
 }
 
 void TFListInit(TF_list &List)
 {
 	List.size = 0;
-	List.totalCount = 0;
+	List.maxCount = 0;
 	List.capacity = 1000;
 	List.arrNorm = new TF[1000];
 }
@@ -30,7 +30,7 @@ void addTF(TF_list &List, TF data)
 		List.arrNorm = temp1;
 	}
 
-	List.totalCount += data.count;
+	List.maxCount = (List.maxCount < data.count) ? data.count : List.maxCount;
 	List.arrNorm[List.size++] = data;
 }
 
@@ -40,7 +40,7 @@ void LoadTFList(string filename, TF_list& List)
 
 	//FreeTFList(List);
 	
-	fr >> List.capacity >> List.size >> List.totalCount;
+	fr >> List.capacity >> List.size >> List.maxCount;
 	fr.ignore();
 
 	string s = "";
@@ -64,7 +64,7 @@ void SaveTFList(string filename, TF_list List)
 {
 	ofstream fw(filename, ios::out);
 
-	fw << List.size << "\n" << List.size << "\n" << List.totalCount << "\n";
+	fw << List.size << "\n" << List.size << "\n" << List.maxCount << "\n";
 	for (int i = 0; i < List.size; i++)
 	{
 		fw << List.arrNorm[i].word << "\n";
@@ -78,7 +78,7 @@ void FreeTFList(TF_list &List)
 {
 	delete[] List.arrNorm;
 	List.arrNorm = nullptr;
-	List.totalCount = 0;
+	List.maxCount = 0;
 	List.capacity = 0;
 	List.size = 0;
 }

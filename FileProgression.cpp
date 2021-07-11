@@ -73,7 +73,69 @@ TF_list createTF(string filePath) {
 	return L;
 }
 
-void createMetadata(string folderDataset) 
+void updateFolder(string foldername)
+{
+	ifstream ifs(SUBFOLDER_NAME, ios::in);
+	string line;
+	bool isAvailable = false;
+	while(getline(ifs, line))
+		if (line == foldername)
+		{
+			isAvailable = true;
+			break;
+		}
+	ifs.close();
+
+	if (!isAvailable)
+	{
+		fstream afs(SUBFOLDER_NAME, ios::app);
+		afs << foldername << "\n";
+		afs.close();
+	}	
+}
+
+void updateMetadata(string path)
+{
+	int k = path.length() - 1;
+	while (k >= 0 && path[k] != '\\') k--;
+
+	string prefolder = path.substr(0, k), foldername = path.substr(k + 1);
+
+	copyFolderWrapper(path, string(METADATA_NAME) + "\\" + foldername);
+
+	updateFolder(foldername);
+
+	string path_to_file = string(METADATA_NAME) + "\\" + foldername + "(1).txt";
+
+	getFileWrapper(path, path_to_file);
+	evalCommand(string("copy \"") + string(METADATA_NAME) + "\\" + foldername + "\" + \"" + path_to_file + "\" \"" + string(METADATA_NAME) + "\\" + foldername + "\"");
+	evalCommand(string("del /q ") + path_to_file);
+	makeFolderWrapper(string(METADATA_NAME) + "\\" + foldername);
+
+	ifstream ifs(path_to_file, ios::in);
+
+	string filename = "";
+	int fileCount = 0;
+	while (getline(ifs, filename))
+	{
+		fileCount++;
+		string tfPath = string("" METADATA_NAME "\\") + foldername + "\\" + filename + ".tf";
+		string filePath = path + "\\" + filename;
+		TF_list L = createTF(filePath);
+		SaveTFList((char*)tfPath.c_str(), L);
+		FreeTFList(L);
+	}
+
+	string folderpath = string("" METADATA_NAME "\\") + foldername;
+	IDF_list idf = createIDF(folderpath);
+	string idfPath = folderpath + string(".idf");
+	SaveIDFList(idfPath, idf);
+	FreeIDFList(idf);
+
+	ifs.close();
+}
+
+void createMetadata(string folderDataset)
 {
 	initString(strArr);
 	prepareFile(folderDataset);
@@ -92,7 +154,7 @@ void createMetadata(string folderDataset)
 		while (getline(fr, fileName)) 
 		{
 			nFiles++;
-			string tfPath = string("" METADATA_NAME "\\") + folderName + '\\' + fileName + ".tf";
+			string tfPath = string("" METADATA_NAME "\\") + folderName + "\\" + fileName + ".tf";
 			string filePath = folderDataset + "\\" + folderName + "\\" + fileName;
 			TF_list L = createTF(filePath);
 			SaveTFList((char*)tfPath.c_str(), L);
@@ -103,7 +165,7 @@ void createMetadata(string folderDataset)
 		string path = string("" METADATA_NAME "\\") + folderName;
 		IDF_list idf = createIDF(path);
 		string idfPath = path + string(".idf");
-		SaveIDFList((char*)idfPath.c_str(), idf);
+		SaveIDFList(idfPath, idf);
 		FreeIDFList(idf);
 	}
 	subFol.close();
@@ -150,6 +212,20 @@ void loadToRAM()
 	deleteArray(strArr);
 }
 
+void freeRAM()
+{
+	delete[] folderList;
+	delete[] fileCount;
+	for (int i = 0; i < folderCount; i++)
+	{
+		delete[] fileList[i];
+		FreeIDFList(folder_data[i].idfL);
+
+	}
+	delete[] fileList;
+
+}
+
 ResponseData queryRequest(string word) // singular word
 {
 	int posIDF = 0;
@@ -181,7 +257,7 @@ ResponseData queryRequest(string word) // singular word
 
 IDF_list createIDF(string folderPath) 
 {
-	string directory = folderPath + ".txt"; // for example, metadata\Am nhac -> metadata\Am nhac.txt
+	string directory = folderPath + ".txt"; 
 	string fileName = "";
 	ifstream path(directory, ios::in);
 	
@@ -279,7 +355,7 @@ void searchSentence(string sentence) {
 	for (int i = 0; i < resSize; i++) {
 		fileData thisFile = resFiles[i];
 		cout << fileList[thisFile.posFolder][thisFile.posFile] << " in folder " << folderList[thisFile.posFolder] << ". ";
-		//cout << "The value is: " << thisFile.value << ". ";
+		cout << "The value is: " << thisFile.value << ". ";
 		cout << "Fit " << thisFile.intersectionCount << " words.\n";
 	}
 	delete[]resResponse;

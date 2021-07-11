@@ -107,6 +107,11 @@ string extractPath(string path)
 	return path.substr(i + 1);
 }
 
+void copyFolderWrapper(string path_to_folder, string path_to_output)
+{
+	evalCommand(string("copy \"") + path_to_folder + "\" \"" + path_to_output + "\"");
+}
+
 // ---------------------------------
 
 

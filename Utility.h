@@ -43,6 +43,8 @@ void getFileWrapper(string, string);
 void deleteFileWrapper(string);
 string extractPath(string);
 
+void copyFolderWrapper(string, string);
+
 // --------------Miscellaneous--------------
 
 void evalCommand(string);

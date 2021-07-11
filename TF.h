@@ -11,7 +11,7 @@ struct TF {
 struct TF_list {
 	int size;
 	int capacity;
-	int totalCount;
+	int maxCount;
 	TF* arrNorm;
 };
 
