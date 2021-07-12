@@ -5,6 +5,8 @@
 
 #define SUBFOLDER_NAME "FolderList.txt"
 
+#define EXTERNAL_FOLDER "ExFolder"
+
 #define INDEX_NAME "Index.txt"
 
 #include <stdio.h>
@@ -33,11 +35,13 @@ int* fileCount = nullptr;
 
 folderData* folder_data;
 
+string prevDataset = "";
+
 void prepareFile(string folderPath)
 {
 	makeFolderWrapper(METADATA_NAME);
 	getFolderWrapper(folderPath, SUBFOLDER_NAME);
-	
+
 	ifstream input(SUBFOLDER_NAME, ios::in);
 
 	string line = "";
@@ -75,23 +79,29 @@ TF_list createTF(string filePath) {
 
 void updateFolder(string foldername)
 {
-	ifstream ifs(SUBFOLDER_NAME, ios::in);
-	string line;
-	bool isAvailable = false;
-	while(getline(ifs, line))
-		if (line == foldername)
+	initString(strArr);
+	
+	loadTextToArray(strArr, SUBFOLDER_NAME);
+	bool isExist = false;
+	for(int i = 0; i < strArr.size - 1; i++)
+		if (foldername == strArr.Array[i])
 		{
-			isAvailable = true;
+			isExist = true;
 			break;
 		}
-	ifs.close();
-
-	if (!isAvailable)
+	if (!isExist)
 	{
-		fstream afs(SUBFOLDER_NAME, ios::app);
-		afs << foldername << "\n";
-		afs.close();
-	}	
+		ofstream ofs(SUBFOLDER_NAME, ios::out);
+
+		for (int i = 0; i < strArr.size - 1; i++)
+			ofs << strArr.Array[i] << "\n";
+		ofs << foldername << "\n";
+		ofs << strArr.Array[strArr.size - 1];
+
+		ofs.close();
+	}
+
+	deleteArray(strArr);
 }
 
 void updateMetadata(string path)
@@ -99,20 +109,23 @@ void updateMetadata(string path)
 	int k = path.length() - 1;
 	while (k >= 0 && path[k] != '\\') k--;
 
-	string prefolder = path.substr(0, k), foldername = path.substr(k + 1);
+	string foldername = path.substr(k + 1);
 
-	copyFolderWrapper(path, string(METADATA_NAME) + "\\" + foldername);
+	copyFolderWrapper(path, prevDataset + "\\" + foldername);
 
 	updateFolder(foldername);
 
-	string path_to_file = string(METADATA_NAME) + "\\" + foldername + "(1).txt";
+	path = prevDataset + "\\" + foldername;
+
+	string path_to_file = string(METADATA_NAME) + "\\" + foldername + ".txt";
 
 	getFileWrapper(path, path_to_file);
-	evalCommand(string("copy \"") + string(METADATA_NAME) + "\\" + foldername + "\" + \"" + path_to_file + "\" \"" + string(METADATA_NAME) + "\\" + foldername + "\"");
-	evalCommand(string("del /q ") + path_to_file);
+
 	makeFolderWrapper(string(METADATA_NAME) + "\\" + foldername);
 
 	ifstream ifs(path_to_file, ios::in);
+
+	initString(strArr);
 
 	string filename = "";
 	int fileCount = 0;
@@ -133,6 +146,7 @@ void updateMetadata(string path)
 	FreeIDFList(idf);
 
 	ifs.close();
+	deleteArray(strArr);
 }
 
 void createMetadata(string folderDataset)
@@ -171,6 +185,10 @@ void createMetadata(string folderDataset)
 	subFol.close();
 
 	deleteArray(strArr);
+
+	fstream afs(SUBFOLDER_NAME, ios::app);
+	afs << folderDataset << "\n";
+	afs.close();
 }
 
 void loadToRAM()
@@ -179,7 +197,9 @@ void loadToRAM()
 
 	loadTextToArray(strArr, SUBFOLDER_NAME);
 
-	folderCount = strArr.size;
+	prevDataset = strArr.Array[strArr.size - 1];
+
+	folderCount = strArr.size - 1;
 	folderList = new string[folderCount];
 	fileList = new string*[folderCount];
 	fileCount = new int[folderCount];

@@ -58,7 +58,7 @@ void loadTextToArray(StringArray &sa, string filename)
 
 void makeFolderWrapper(string path_to_folder)
 {
-	evalCommand(string("mkdir \"") + path_to_folder + "\"");
+	evalCommand(string("mkdir \"") + path_to_folder + "\">nul");
 }
 
 void getFolderWrapper(string path_to_folder, string path_to_outputFile)
@@ -109,7 +109,7 @@ string extractPath(string path)
 
 void copyFolderWrapper(string path_to_folder, string path_to_output)
 {
-	evalCommand(string("copy \"") + path_to_folder + "\" \"" + path_to_output + "\"");
+	evalCommand(string("xcopy /E/I/Y \"") + path_to_folder + "\" \"" + path_to_output + "\" >nul");
 }
 
 // ---------------------------------
