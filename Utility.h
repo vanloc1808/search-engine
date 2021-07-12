@@ -4,20 +4,20 @@
 #include "IDF.h"
 using namespace std;
 
-struct fileData {
+struct FileData {
 	int posFolder;
 	int posFile;
 	double value; //the value of expression tf * idf
 	int intersectionCount;
 };
 
-struct folderData {
+struct FolderData {
 	IDF_list idfL;
 	TF_list* tfLArr;
 };
 
 struct ResponseData {
-	fileData* file;
+	FileData* file;
 	int size;
 	int cap;
 };
@@ -25,7 +25,7 @@ struct ResponseData {
 // --------------StringArray----------------
 
 struct StringArray {
-	string* Array;
+	string* array;
 	int size;
 	int cap;
 };
@@ -33,28 +33,29 @@ struct StringArray {
 void initString(StringArray&);
 void addString(StringArray&, string);
 void deleteArray(StringArray&);
-void loadTextToArray(StringArray&, string);
+void loadTextToArray(StringArray&, const string&);
 
 // --------------File----------------------
 
-void makeFolderWrapper(string);
-void getFolderWrapper(string, string);
-void getFileWrapper(string, string);
-void deleteFileWrapper(string);
+void makeFolderWrapper(const string&);
+void getFolderWrapper(const string&, const string&);
+void getFileWrapper(const string&, const string&);
+void deleteFileWrapper(const string&);
 string extractPath(string);
 
-void copyFolderWrapper(string, string);
+void copyFolderWrapper(const string&, const string&);
+void openFileWithNotepadWrapper(const string&);
 
 // --------------Miscellaneous--------------
 
-void evalCommand(string);
-void sort_multiThread(StringArray&);
-int bSearch_TF(TF_list, string);
-int bSearch_IDF(IDF_list List, string key);
+void evalCommand(const string&);
+void sortMultiThread(StringArray&);
+int bSearchTF(TF_list, const string&);
+int bSearchIDF(IDF_list List, const string& Key);
 
 // -----------------------------------------
 void initResponse(ResponseData &);
-void addResponse(ResponseData &, fileData);
+void addResponse(ResponseData &, FileData);
 void deleteResponse(ResponseData &);
 void intersectResponse(ResponseData &, ResponseData);
 void sortResponse(ResponseData &);

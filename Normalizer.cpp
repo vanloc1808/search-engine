@@ -1,14 +1,10 @@
-﻿#include <string.h>
-#include <string>
-#include <iostream>
-#include <fstream>
-//#include <codecvt>
+﻿#include <string>
 #include "Normalizer.h"
 #include <cctype>
 using namespace std;
 
 
-wchar_t inverseMap[] = { L'a',L'á',L'à',L'ả',L'ã',L'ạ',L'â',L'ấ',L'ầ',L'ẩ',L'ẫ',L'ậ',L'ă',L'ắ',L'ằ',L'ẳ',L'ẵ',L'ặ', \
+wchar_t inverse_map[] = { L'a',L'á',L'à',L'ả',L'ã',L'ạ',L'â',L'ấ',L'ầ',L'ẩ',L'ẫ',L'ậ',L'ă',L'ắ',L'ằ',L'ẳ',L'ẵ',L'ặ', \
   L'e',L'ê',L'ế',L'ề',L'ể',L'ễ', L'ệ', L'é', L'è', L'ẻ', L'ẽ', L'ẹ', \
   L'i',L'í',L'ì',L'ỉ',L'ĩ', L'ị', \
   L'o',L'ó',L'ò',L'ỏ',L'õ', L'ọ', L'ô', L'ố', L'ồ', L'ổ', L'ỗ', L'ộ', L'ớ', L'ờ', L'ở', L'ỡ', L'ợ', L'ơ', \
@@ -22,14 +18,14 @@ wchar_t inverseMap[] = { L'a',L'á',L'à',L'ả',L'ã',L'ạ',L'â',L'ấ',L'ầ
 //  "u","us","uf","ur","ux","uj","uw","uws","uwf","uwr","uwj","uwx", \
 //  "b","c","dd","d","f","g","h","j","k","l","m","n","p","q","r","s","t","v","w","x","y","ys","yf","yr","yx","yj","z" };
 
-wchar_t inverseCapitalMap[] = { L'A',L'Á',L'À',L'Ả',L'Ã',L'Ạ',L'Â',L'Ấ',L'Ầ',L'Ẩ',L'Ẫ',L'Ậ',L'Ă',L'Ắ',L'Ằ',L'Ẳ',L'Ẵ',L'Ặ', \
+wchar_t inverse_capital_map[] = { L'A',L'Á',L'À',L'Ả',L'Ã',L'Ạ',L'Â',L'Ấ',L'Ầ',L'Ẩ',L'Ẫ',L'Ậ',L'Ă',L'Ắ',L'Ằ',L'Ẳ',L'Ẵ',L'Ặ', \
   L'E',L'Ê',L'Ế',L'Ề',L'Ể',L'Ễ', L'Ệ', L'É', L'È', L'Ẻ', L'Ẽ', L'Ẹ', \
   L'I',L'Í',L'Ì',L'Ỉ',L'Ĩ', L'Ị', \
   L'O',L'Ó',L'Ò',L'Ỏ',L'Õ', L'Ọ', L'Ô', L'Ố', L'Ồ', L'Ổ', L'Ỗ', L'Ộ', L'Ớ', L'Ờ', L'Ở', L'Ỡ', L'Ợ', L'Ơ', \
   L'U',L'Ú',L'Ù',L'Ủ',L'Ũ', L'Ụ', L'Ư', L'Ứ', L'Ừ', L'Ử', L'Ự', L'Ữ', \
   L'B',L'C',L'Đ',L'D',L'F',L'G',L'H',L'J',L'K',L'L',L'M',L'N',L'P',L'Q',L'R',L'S',L'T',L'V',L'W',L'X',L'Y',L'Ý',L'Ỳ',L'Ỷ',L'Ỹ',L'Ỵ',L'Z' };
 
-char normalMap[] = { 'a','a','a','a','a','a','a','a','a','a','a','a','a','a','a','a','a','a', \
+char normal_map[] = { 'a','a','a','a','a','a','a','a','a','a','a','a','a','a','a','a','a','a', \
   'e','e','e','e','e','e','e','e','e','e','e','e', \
   'i','i','i','i','i','i', \
   'o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o', \
@@ -38,25 +34,26 @@ char normalMap[] = { 'a','a','a','a','a','a','a','a','a','a','a','a','a','a','a'
 
 
 
-string VEconvert(wstring source) { // Todo: include numbers
-  string result = "";
-  for(unsigned int i = 0; i < source.length(); i++) {
+string VEconvert(const wstring& Source) { 
+  string result;
+  for (wchar_t t : Source)
+  {
     int pos = 0;
-	wchar_t t = source[i];
-	for (; pos < 93 && t != inverseMap[pos] && t != inverseCapitalMap[pos]; pos++);
+    for (; pos < 93 && t != inverse_map[pos] && t != inverse_capital_map[pos]; pos++){}
 	if ((pos == 93) && !((48 <= t) && (t <= 57))) {
 		continue;
 	}
-    result += normalMap[pos];
+    result += normal_map[pos];
   }
   return result;
 }
 
-string normalPunctuation(string s) {
-	string temp = "";
-	for (int i = 0; i < s.length(); i++) {
-		if (!ispunct(s[i])) {
-			temp += s[i];
+string normalPunctuation(const string& S) {
+	string temp;
+	for (char i : S)
+	{
+		if (!ispunct(i)) {
+			temp += i;
 		}
 	}
 	return temp;

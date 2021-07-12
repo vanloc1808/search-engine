@@ -17,10 +17,10 @@ struct IDF_list {
 
 double getIDFValue(IDF_list List, int i);
 
-void IDFListInit(IDF_list&);
+void idfListInit(IDF_list&);
 void addIDF(IDF_list&, IDF);
-void LoadIDFList(string, IDF_list&);
-void SaveIDFList(string, IDF_list);
-void FreeIDFList(IDF_list&);
+void loadIDFList(const string&, IDF_list&);
+void saveIDFList(const string&, IDF_list);
+void freeIDFList(IDF_list&);
 
-void IDFList_Input(IDF_list&, int, string*, int);
+void idfListInput(IDF_list&, int, string*, int);

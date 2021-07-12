@@ -5,7 +5,7 @@ using std::string;
 // word | count
 struct TF {
     string word;
-    int count;
+    int count{};
 };
 
 struct TF_list {
@@ -17,10 +17,10 @@ struct TF_list {
 
 double getTFValue(TF_list List, int i);
 
-void TFListInit(TF_list&);
-void addTF(TF_list&, TF);
-void LoadTFList(string, TF_list&);
-void SaveTFList(string, TF_list);
-void FreeTFList(TF_list&);
+void tfListInit(TF_list&);
+void addTF(TF_list&, const TF&);
+void loadTFList(const string&, TF_list&);
+void saveTFList(const string&, TF_list);
+void freeTFList(TF_list&);
 
-void TFList_Input(TF_list&, string*, int);
+void tfListInput(TF_list&, string*, int);

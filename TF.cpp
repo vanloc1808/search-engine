@@ -1,16 +1,15 @@
 #include "TF.h"
 #include <fstream>
 using namespace std;
-#pragma warning(disable:4996)
 
-double getTFValue(TF_list List, int i)
+double getTFValue(const TF_list List, const int i)
 {
 	if(i >= List.size)
 		return 0;
-	return 0.5 + 0.5 * ((double)List.arrNorm[i].count / List.maxCount);
+	return 0.5 + 0.5 * (static_cast<double>(List.arrNorm[i].count) / List.maxCount);
 }
 
-void TFListInit(TF_list &List)
+void tfListInit(TF_list &List)
 {
 	List.size = 0;
 	List.maxCount = 0;
@@ -18,7 +17,7 @@ void TFListInit(TF_list &List)
 	List.arrNorm = new TF[1000];
 }
 
-void addTF(TF_list &List, TF data)
+void addTF(TF_list &List, const TF& Data)
 {
 	if (List.size == List.capacity) {
 		List.capacity += 1000;
@@ -30,20 +29,20 @@ void addTF(TF_list &List, TF data)
 		List.arrNorm = temp1;
 	}
 
-	List.maxCount = (List.maxCount < data.count) ? data.count : List.maxCount;
-	List.arrNorm[List.size++] = data;
+	List.maxCount = (List.maxCount < Data.count) ? Data.count : List.maxCount;
+	List.arrNorm[List.size++] = Data;
 }
 
-void LoadTFList(string filename, TF_list& List)
+void loadTFList(const string& Filename, TF_list& List)
 {
-	ifstream fr(filename, ios::in);
+	ifstream fr(Filename, ios::in);
 
-	//FreeTFList(List);
+	//freeTFList(List);
 	
 	fr >> List.capacity >> List.size >> List.maxCount;
 	fr.ignore();
 
-	string s = "";
+	string s;
 
 	List.arrNorm = new TF[List.capacity];
 
@@ -60,9 +59,9 @@ void LoadTFList(string filename, TF_list& List)
 	fr.close();
 }
 
-void SaveTFList(string filename, TF_list List)
+void saveTFList(const string& Filename, const TF_list List)
 {
-	ofstream fw(filename, ios::out);
+	ofstream fw(Filename, ios::out);
 
 	fw << List.size << "\n" << List.size << "\n" << List.maxCount << "\n";
 	for (int i = 0; i < List.size; i++)
@@ -74,7 +73,7 @@ void SaveTFList(string filename, TF_list List)
 	fw.close();
 }
 
-void FreeTFList(TF_list &List)
+void freeTFList(TF_list &List)
 {
 	delete[] List.arrNorm;
 	List.arrNorm = nullptr;
@@ -83,21 +82,21 @@ void FreeTFList(TF_list &List)
 	List.size = 0;
 }
 
-void TFList_Input(TF_list& List, string* data, int n) // data is sorted increasingly
+void tfListInput(TF_list& List, string* Data, const int N) // Supposed data is sorted increasingly
 {
 	int count = 0;
-	for (int i = 0; i < n - 1; i++)
+	for (int i = 0; i < N - 1; i++)
 	{
 		count++;
-		if (data[i] != data[i + 1]) {
-			TF t{ data[i], count };
+		if (Data[i] != Data[i + 1]) {
+			TF t{ Data[i], count };
 			addTF(List, t);
 			count = 0;
 		}
 	}
 	if (count > 0)
 	{
-		TF t{ data[n - 1], count };
+		const TF t{ Data[N - 1], count };
 		addTF(List, t);
 		count = 0;
 	}

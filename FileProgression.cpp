@@ -1,23 +1,12 @@
-#define _CRT_SECURE_NO_WARNINGS
-#pragma warning(disable:4996)
-
-#define METADATA_NAME "metadata"
-
-#define SUBFOLDER_NAME "FolderList.txt"
-
-#define EXTERNAL_FOLDER "ExFolder"
-
-#define INDEX_NAME "Index.txt"
-
-#include <stdio.h>
 #include <iostream>
 #include <Windows.h>
 #include <string>
-#include <string.h>
-#include <algorithm>
 #include <fstream>
 #include <codecvt>
 #include <sstream>
+#include <utility>
+#include <iomanip>
+#include <cctype>
 #include "Normalizer.h"
 #include "FileProgression.h"
 #include "TF.h"
@@ -26,29 +15,33 @@
 
 using namespace std;
 
-StringArray strArr;
+const string METADATA_NAME = "metadata";
+const string SUBFOLDER_NAME = "FolderList.txt";
+const string INDEX_NAME = "Index.txt";
 
-string* folderList = nullptr;
-int folderCount = 0;
+StringArray str_arr;
 
-string** fileList = nullptr;
-int* fileCount = nullptr;
+string* folder_list = nullptr;
+int folder_count = 0;
 
-folderData* folder_data;
+string** file_list = nullptr;
+int* file_count = nullptr;
 
-string prevDataset = "";
+FolderData* folder_data;
 
-void prepareFile(string folderPath)
+string prev_dataset;
+
+void prepareFile(const string& FolderPath)
 {
 	makeFolderWrapper(METADATA_NAME);
-	getFolderWrapper(folderPath, SUBFOLDER_NAME);
+	getFolderWrapper(FolderPath, SUBFOLDER_NAME);
 
 	ifstream input(SUBFOLDER_NAME, ios::in);
 
-	string line = "";
+	string line;
 	while (getline(input, line))
 	{
-		string path_to_folder = folderPath + "\\" + line;
+		string path_to_folder = FolderPath + "\\" + line;
 		string path_to_file = string(METADATA_NAME) + "\\" + line + ".txt";
 		getFileWrapper(path_to_folder, path_to_file);
 		makeFolderWrapper(string(METADATA_NAME) + "\\" + line);
@@ -57,135 +50,183 @@ void prepareFile(string folderPath)
 	input.close();
 }
 
-TF_list createTF(string filePath) {
-	TF_list L;
-	TFListInit(L);
-	wifstream fin(filePath, ios::in);
+bool isFirstTime() {
+	ifstream fin(SUBFOLDER_NAME, ios::in);
+	if (!fin.is_open()) {
+		fin.close();
+		return true;
+	}
+	fin.close();
+	return false;
+}
+
+TF_list createTF(const string& FilePath) {
+	TF_list L{};
+	tfListInit(L);
+	wifstream fin(FilePath, ios::in);
 	fin.imbue(locale(locale::empty(), new codecvt_utf16<wchar_t, 0x10ffff, std::little_endian>));
 	wstring s;
 
 	while (fin >> s) {
-		string convertedString = VEconvert(s);
-		if (convertedString.length() == 0)
+		string converted_string = VEconvert(s);
+		if (converted_string.length() == 0)
 			continue;
-		addString(strArr, convertedString);
+		addString(str_arr, converted_string);
 	}
 
-	sort_multiThread(strArr);
-	TFList_Input(L, strArr.Array, strArr.size);
+	sortMultiThread(str_arr);
+	tfListInput(L, str_arr.array, str_arr.size);
 	fin.close();
-	strArr.size = 0; // reset but not free
+	str_arr.size = 0; // reset but not free
 	return L;
 }
 
-void updateFolder(string foldername)
+void updateFolder(const string& FolderName)
 {
-	initString(strArr);
+	initString(str_arr);
 	
-	loadTextToArray(strArr, SUBFOLDER_NAME);
-	bool isExist = false;
-	for(int i = 0; i < strArr.size - 1; i++)
-		if (foldername == strArr.Array[i])
+	loadTextToArray(str_arr, SUBFOLDER_NAME);
+	bool is_exist = false;
+	for(int i = 0; i < str_arr.size - 1; i++)
+		if (FolderName == str_arr.array[i])
 		{
-			isExist = true;
+			is_exist = true;
 			break;
 		}
-	if (!isExist)
+	if (!is_exist)
 	{
 		ofstream ofs(SUBFOLDER_NAME, ios::out);
 
-		for (int i = 0; i < strArr.size - 1; i++)
-			ofs << strArr.Array[i] << "\n";
-		ofs << foldername << "\n";
-		ofs << strArr.Array[strArr.size - 1];
+		for (int i = 0; i < str_arr.size - 1; i++)
+			ofs << str_arr.array[i] << "\n";
+		ofs << FolderName << "\n";
+		ofs << str_arr.array[str_arr.size - 1];
 
 		ofs.close();
 	}
 
-	deleteArray(strArr);
+	deleteArray(str_arr);
 }
 
-void updateMetadata(string path)
+IDF_list createIDF(const string& FolderPath)
 {
-	int k = path.length() - 1;
-	while (k >= 0 && path[k] != '\\') k--;
+	const string directory = FolderPath + ".txt";
+	string file_name;
+	ifstream path(directory, ios::in);
 
-	string foldername = path.substr(k + 1);
+	str_arr.size = 0;
 
-	copyFolderWrapper(path, prevDataset + "\\" + foldername);
+	IDF_list idfL{};
+	idfListInit(idfL);
 
-	updateFolder(foldername);
+	int n_files = 0;// number of files
+	int n_words = 0; //number of words
 
-	path = prevDataset + "\\" + foldername;
+	while (getline(path, file_name))
+	{
+		if (file_name.length() == 0)
+			continue;
+		n_files++;
 
-	string path_to_file = string(METADATA_NAME) + "\\" + foldername + ".txt";
+		string tf_path = FolderPath + "\\" + file_name + ".tf";
 
-	getFileWrapper(path, path_to_file);
+		TF_list tfL{};
+		loadTFList(tf_path, tfL);
 
-	makeFolderWrapper(string(METADATA_NAME) + "\\" + foldername);
+		for (int i = 0; i < tfL.size; i++)
+		{
+			string temp_str = tfL.arrNorm[i].word;
+			if (temp_str.length() == 0)
+				continue;
+			n_words++;
 
+			addString(str_arr, temp_str);
+		}
+		freeTFList(tfL);
+	}
+
+	sortMultiThread(str_arr);
+	idfListInput(idfL, n_files, str_arr.array, n_words);
+	path.close();
+	str_arr.size = 0;
+
+	return idfL;
+}
+
+void updateMetadata(string Path)
+{
+	int k = Path.length() - 1;
+	while (k >= 0 && Path[k] != '\\') k--;
+
+	string folder_name = Path.substr(k + 1);
+	copyFolderWrapper(Path, prev_dataset + "\\" + folder_name);
+	updateFolder(folder_name);
+	Path = prev_dataset + "\\" + folder_name;
+	string path_to_file = string(METADATA_NAME) + "\\" + folder_name + ".txt";
+	getFileWrapper(Path, path_to_file);
+	makeFolderWrapper(string(METADATA_NAME) + "\\" + folder_name);
 	ifstream ifs(path_to_file, ios::in);
 
-	initString(strArr);
+	initString(str_arr);
 
-	string filename = "";
+	string filename;
 	int fileCount = 0;
 	while (getline(ifs, filename))
 	{
 		fileCount++;
-		string tfPath = string("" METADATA_NAME "\\") + foldername + "\\" + filename + ".tf";
-		string filePath = path + "\\" + filename;
-		TF_list L = createTF(filePath);
-		SaveTFList((char*)tfPath.c_str(), L);
-		FreeTFList(L);
+		string tf_path = METADATA_NAME + "\\" + folder_name + "\\" + filename + ".tf";
+		string file_path = Path + "\\" + filename;
+		TF_list L = createTF(file_path);
+		saveTFList(tf_path, L);
+		freeTFList(L);
 	}
 
-	string folderpath = string("" METADATA_NAME "\\") + foldername;
-	IDF_list idf = createIDF(folderpath);
-	string idfPath = folderpath + string(".idf");
-	SaveIDFList(idfPath, idf);
-	FreeIDFList(idf);
+	string folder_path = METADATA_NAME + "\\" + folder_name;
+	IDF_list idf = createIDF(folder_path);
+	string idf_path = folder_path + string(".idf");
+	saveIDFList(idf_path, idf);
+	freeIDFList(idf);
 
 	ifs.close();
-	deleteArray(strArr);
+	deleteArray(str_arr);
 }
 
-void createMetadata(string folderDataset)
+void createMetadata(const string& folderDataset)
 {
-	initString(strArr);
+	initString(str_arr);
 	prepareFile(folderDataset);
 
 	ifstream subFol(SUBFOLDER_NAME, ios::in);
-	string folderName = "";
+	string folderName;
 
 	while (getline(subFol, folderName)) 
 	{
 		cout << "Processing with folder " << folderName << "...\n";
-		int nFiles = 0;
-		string listFile = string("" METADATA_NAME "\\") + folderName + ".txt";
-		ifstream fr(listFile, ios::in);
-		string fileName = "";
+		int n_files = 0;
+		string list_file = METADATA_NAME + "\\" + folderName + ".txt";
+		ifstream fr(list_file, ios::in);
+		string file_name;
 
-		while (getline(fr, fileName)) 
+		while (getline(fr, file_name)) 
 		{
-			nFiles++;
-			string tfPath = string("" METADATA_NAME "\\") + folderName + "\\" + fileName + ".tf";
-			string filePath = folderDataset + "\\" + folderName + "\\" + fileName;
-			TF_list L = createTF(filePath);
-			SaveTFList((char*)tfPath.c_str(), L);
-			FreeTFList(L);
+			n_files++;
+			string tf_path = METADATA_NAME + "\\" + folderName + "\\" + file_name + ".tf";
+			string file_path = folderDataset + "\\" + folderName + "\\" + file_name;
+			TF_list L = createTF(file_path);
+			saveTFList(tf_path, L);
+			freeTFList(L);
 		}
 		fr.close();
 
-		string path = string("" METADATA_NAME "\\") + folderName;
+		string path = METADATA_NAME + "\\" + folderName;
 		IDF_list idf = createIDF(path);
-		string idfPath = path + string(".idf");
-		SaveIDFList(idfPath, idf);
-		FreeIDFList(idf);
+		string idf_path = path + string(".idf");
+		saveIDFList(idf_path, idf);
+		freeIDFList(idf);
 	}
 	subFol.close();
 
-	deleteArray(strArr);
+	deleteArray(str_arr);
 
 	fstream afs(SUBFOLDER_NAME, ios::app);
 	afs << folderDataset << "\n";
@@ -194,81 +235,78 @@ void createMetadata(string folderDataset)
 
 void loadToRAM()
 {
-	initString(strArr);
+	initString(str_arr);
 
-	loadTextToArray(strArr, SUBFOLDER_NAME);
+	loadTextToArray(str_arr, SUBFOLDER_NAME);
 
-	prevDataset = strArr.Array[strArr.size - 1];
+	prev_dataset = str_arr.array[str_arr.size - 1];
 
-	folderCount = strArr.size - 1;
-	folderList = new string[folderCount];
-	fileList = new string*[folderCount];
-	fileCount = new int[folderCount];
+	folder_count = str_arr.size - 1;
+	folder_list = new string[folder_count];
+	file_list = new string*[folder_count];
+	file_count = new int[folder_count];
 
-	folder_data = new folderData[folderCount];
+	folder_data = new FolderData[folder_count];
 
-	for(int i = 0; i < folderCount; i++)
-		folderList[i] = strArr.Array[i];
+	for(int i = 0; i < folder_count; i++)
+		folder_list[i] = str_arr.array[i];
 
-	strArr.size = 0;
+	str_arr.size = 0;
 
-	for(int i = 0; i < folderCount; i++)
+	for(int i = 0; i < folder_count; i++)
 	{
-		string filePath = string(METADATA_NAME) + "\\" + folderList[i];
-		loadTextToArray(strArr, filePath + ".txt");
+		string file_path = string(METADATA_NAME) + "\\" + folder_list[i];
+		loadTextToArray(str_arr, file_path + ".txt");
 		
-		LoadIDFList(filePath + ".idf", folder_data[i].idfL);
-		folder_data[i].tfLArr = new TF_list[strArr.size];
+		loadIDFList(file_path + ".idf", folder_data[i].idfL);
+		folder_data[i].tfLArr = new TF_list[str_arr.size];
 
-		fileCount[i] = strArr.size;
-		fileList[i] = new string[strArr.size];
+		file_count[i] = str_arr.size;
+		file_list[i] = new string[str_arr.size];
 
-		for(int j = 0; j < strArr.size; j++)
+		for(int j = 0; j < str_arr.size; j++)
 		{
-			fileList[i][j] = strArr.Array[j];
-			LoadTFList(filePath + "\\" + strArr.Array[j] + ".tf", folder_data[i].tfLArr[j]);
+			file_list[i][j] = str_arr.array[j];
+			loadTFList(file_path + "\\" + str_arr.array[j] + ".tf", folder_data[i].tfLArr[j]);
 		}
 	}
 
-	deleteArray(strArr);
+	deleteArray(str_arr);
 }
 
 void freeRAM()
 {
-	delete[] folderList;
-	delete[] fileCount;
-	for (int i = 0; i < folderCount; i++)
+	delete[] folder_list;
+	delete[] file_count;
+	for (int i = 0; i < folder_count; i++)
 	{
-		delete[] fileList[i];
-		FreeIDFList(folder_data[i].idfL);
+		delete[] file_list[i];
+		freeIDFList(folder_data[i].idfL);
 
 	}
-	delete[] fileList;
+	delete[] file_list;
 
 }
 
-ResponseData queryRequest(string word) // singular word
+ResponseData queryRequest(const string& Word) // singular word
 {
-	int posIDF = 0;
-	int posTF = 0;
+	int pos_idf;
+	int pos_tf;
 
-	double idfValue = 0.f;
-	double tfValue = 0.f;
-
-	ResponseData rd;
+	ResponseData rd{};
 	initResponse(rd);
 
-	for(int i = 0; i < folderCount; i++) 
+	for(int i = 0; i < folder_count; i++) 
 	{
-		if((posIDF = bSearch_IDF(folder_data[i].idfL, word)) != -1) // If found
+		if((pos_idf = bSearchIDF(folder_data[i].idfL, Word)) != -1) // If found
 		{
-			idfValue = getIDFValue(folder_data[i].idfL, posIDF);
-			for(int j = 0; j < fileCount[i]; j++)
+			const double idf_value = getIDFValue(folder_data[i].idfL, pos_idf);
+			for(int j = 0; j < file_count[i]; j++)
 			{
-				if((posTF = bSearch_TF(folder_data[i].tfLArr[j], word)) != -1)
+				if((pos_tf = bSearchTF(folder_data[i].tfLArr[j], Word)) != -1)
 				{
-					tfValue = getTFValue(folder_data[i].tfLArr[j], posTF);
-					addResponse(rd, fileData{i, j, idfValue * tfValue, 1});
+					const double tf_value = getTFValue(folder_data[i].tfLArr[j], pos_tf);
+					addResponse(rd, FileData{i, j, idf_value * tf_value, 1});
 				}
 			}
 		}
@@ -276,154 +314,102 @@ ResponseData queryRequest(string word) // singular word
 	return rd;
 }
 
-IDF_list createIDF(string folderPath) 
-{
-	string directory = folderPath + ".txt"; 
-	string fileName = "";
-	ifstream path(directory, ios::in);
-	
-	strArr.size = 0;
 
-	IDF_list idfL;
-	IDFListInit(idfL);
-
-	int nFiles= 0;// number of files
-	int nWords = 0; //number of words
-
-	while (getline(path, fileName)) 
-	{
-		if (fileName.length() == 0) 
-			continue;
-		nFiles++;
-
-		string tfPath = folderPath + "\\" + fileName + ".tf";
-
-		TF_list tfL;
-		LoadTFList(tfPath, tfL);
-
-		for (int i = 0; i < tfL.size; i++) 
-		{
-			string tempStr = tfL.arrNorm[i].word;
-			if (tempStr.length() == 0) 
-				continue;
-			nWords++;
-
-			addString(strArr, tempStr);
-		}
-		FreeTFList(tfL);
-	}
-
-	sort_multiThread(strArr);
-	IDFList_Input(idfL, nFiles, strArr.Array, nWords);
-	path.close();
-	strArr.size = 0;
-
-	return idfL;
-}
-
-void test(string key) {
-	ResponseData res = queryRequest(key);
-	sortResponse(res);
-	fileData* listRes = res.file;
-	int size = res.size;
-	for (int i = 0; i < size; i++) {
-		fileData thisFile = listRes[i];
-		cout << fileList[thisFile.posFolder][thisFile.posFile] << " in folder " << folderList[thisFile.posFolder] << ". ";
-		cout << "The value is: " << thisFile.value << "\n";
-	}
-}
-
-int findMaxSize(ResponseData* respArr, int arrSize) {
-	ResponseData res = respArr[0];
+int findMaxSize(ResponseData* RespArr, const int ArrSize) {
+	ResponseData res = RespArr[0];
 	int idx = 0;
-	for (int i = 1; i < arrSize; i++) {
-		ResponseData thisRes = respArr[i];
-		if (res.size < thisRes.size) {
-			res = thisRes;
+	for (int i = 1; i < ArrSize; i++) {
+		if (res.size < RespArr[i].size) {
+			res = RespArr[i];
 			idx = i;
 		}
 	}
 	return idx;
 }
 
-void searchSentence(string sentence) {
-	istringstream oss(sentence);
+void searchSentence(const string& Sentence) {
+	istringstream iss(Sentence);
 	string temp;
-	StringArray stringArr;
-	initString(stringArr);
-	while (oss >> temp) {
-		addString(stringArr,normalPunctuation(temp));
+	StringArray string_arr{};
+	initString(string_arr);
+	while (iss >> temp) {
+		addString(string_arr,normalPunctuation(temp));
 	}
-	int size = stringArr.size;
-	ResponseData* resResponse = new ResponseData[size];
+	int size = string_arr.size;
+	ResponseData* res_response = new ResponseData[size];
 	for (int i = 0; i < size; i++) {
-		resResponse[i] = queryRequest(stringArr.Array[i]);
+		res_response[i] = queryRequest(string_arr.array[i]);
 	}
-	int maxIndex = findMaxSize(resResponse, size);
-	ResponseData rd = resResponse[maxIndex];
+	int max_index = findMaxSize(res_response, size);
+	ResponseData rd = res_response[max_index];
 	for (int i = 0; i < size; i++) {
-		if (i == maxIndex) {
+		if (i == max_index) {
 			continue;
 		}
-		intersectResponse(rd, resResponse[i]);
+		intersectResponse(rd, res_response[i]);
 	}
 	sortResponse(rd);
-	int resSize = rd.size;
-	fileData* resFiles = rd.file;
-	/*if (resSize > 20) {
-		resSize = 20;
-	}
-	*/
-	if (resSize == 0) {
+	const int res_size = rd.size;
+	FileData* res_files = rd.file;
+	if (res_size == 0) {
 		cout << "No items match your search.\n";
 	}
 	else {
-		int left = 0, right = min(resSize, 20);
+		int left = 0, right = min(res_size, 10);
 		while (true) {
+			evalCommand("cls");
+			cout << "Your search query: " << Sentence << "\n";
+			cout << "Displaying result of " << left << " - " << right - 1 << " in " << res_size <<" files.!\n";
 			for (int i = left; i < right; i++) {
-				fileData thisFile = resFiles[i];
-				cout << fileList[thisFile.posFolder][thisFile.posFile] << " in folder " << folderList[thisFile.posFolder] << ". ";
-				cout << "The value is: " << thisFile.value << ". ";
-				cout << "Fit " << thisFile.intersectionCount << " words.\n";
+				const FileData this_file = res_files[i];
+				cout << i - left << ") " << fixed << setprecision(4) << this_file.value << "   "
+					<< file_list[this_file.posFolder][this_file.posFile] << "\t in folder "
+					<< folder_list[this_file.posFolder] << "\n";
 			}
 
-			int openOption = 0;
-			cout << "Do you want to open any file of them? Press 0 for yes, -1 for no.\n";
-			cin >> openOption;
-			while (openOption == 0) {
-				int fileToOpen = 0;
-				cout << "Enter the number of file you want to open. (1-20)\n";
-				cin >> fileToOpen;
-				while (fileToOpen < 1 || fileToOpen>20) {
-					cout << "Invalid option. Please enter another number.\n";
-					cin >> fileToOpen;
+			cout << "[Input number 0 - 9 to open file with notepad, n for next page, p for previous page and b to back to menu]\n";
+			char op = 0;
+			do
+			{
+				cout << "Your option?: ";
+				cin >> op;
+			}
+			while (!isdigit(op) && op != 'n' && op != 'p' && op != 'b');
+
+			if (op == 'b') break;
+
+			if(op == 'n')
+			{
+				left += 10;
+				right += 10;
+				if (right > res_size)
+				{
+					left -= 10;
+					right -= 10;
+					cout << "This is the last page!\n";
+					evalCommand("pause");
 				}
-				string folderName = folderList[resFiles[fileToOpen - 1].posFolder];
-				string fileName = fileList[resFiles[fileToOpen - 1].posFolder][resFiles[fileToOpen - 1].posFile];
-				string pathToOpen = prevDataset + "\\" + folderName + "\\" + fileName;
-				string openCommand = "notepad \"" + pathToOpen + "\"";
-				evalCommand(openCommand);
-				//system("pause");
-				cout << "Press 0 if you want to open a different file, -1 if no.\n";
-				cin >> openOption;
+				continue;
 			}
-			if (right == resSize) {
-				cout << "This is the last page!\n";
-				break;
-			}
-			else {
-				int nextPage = 0;
-				left += right - left + 1;
-				right = min(resSize, right + 20);
-				cout << "Press 0 if you want to go to next page, any number else if no.\n";
-				cin >> nextPage;
-				if (nextPage != 0) {
-					break;
+
+			if(op == 'p')
+			{
+				left -= 10;
+				right -= 10;
+				if (left < 0)
+				{
+					left += 10;
+					right += 10;
+					cout << "This is the first page!\n";
+					evalCommand("pause");
 				}
+				continue;
 			}
+			op -= 48;
+			openFileWithNotepadWrapper(prev_dataset + "\\" + folder_list[res_files[op + left].posFolder] + "\\" + file_list[res_files[op + left].posFolder][res_files[op + left].posFile]);
 		}
 	}	
-	delete[]resResponse;
-	deleteArray(stringArr);
+	delete[]res_response;
+	deleteArray(string_arr);
 }
 

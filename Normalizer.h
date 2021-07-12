@@ -1,6 +1,5 @@
+#pragma once
 #include <string>
-using namespace std;
 
-string VEconvert(wstring source);
-
-string normalPunctuation(string s);
+std::string VEconvert(const std::wstring& Source);
+std::string normalPunctuation(const std::string& S);

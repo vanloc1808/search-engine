@@ -1,20 +1,19 @@
 #include "IDF.h"
-#include <stdio.h>
+#include <cstdio>
 #include <memory.h>
-#include <math.h>
+#include <cmath>
 #include <fstream>
+#include <utility>
 using namespace std;
 
-#pragma warning(disable:4996)
-
-double getIDFValue(IDF_list List, int i)
+double getIDFValue(const IDF_list List, const int i)
 {
 	if(i >= List.size)
 		return 0;
-	return log10((double)List.numFile / List.arrNorm[i].value);
+	return log10(static_cast<double>(List.numFile) / List.arrNorm[i].value);
 }
 
-void IDFListInit(IDF_list &List)
+void idfListInit(IDF_list &List)
 {
 	List.size = 0;	
 	List.numFile = 0;
@@ -22,7 +21,7 @@ void IDFListInit(IDF_list &List)
 	List.arrNorm = new IDF[1000];
 }
 
-void addIDF(IDF_list &List, IDF data)
+void addIDF(IDF_list &List, IDF Data)
 {
 	if (List.size == List.capacity) {
 		List.capacity += 1000;
@@ -33,17 +32,17 @@ void addIDF(IDF_list &List, IDF data)
 		delete[] List.arrNorm;
 		List.arrNorm = temp1;
 	}
-	List.arrNorm[List.size++] = data;
+	List.arrNorm[List.size++] = std::move(Data);
 }
 
-void LoadIDFList(string filename, IDF_list &List)
+void loadIDFList(const string& Filename, IDF_list &List)
 {
-	ifstream fr(filename, ios::in);
+	ifstream fr(Filename, ios::in);
 
-	//FreeIDFList(List);
+	//freeIDFList(List);
 
 	fr >> List.capacity >> List.size >> List.numFile;
-	string s = "";
+	string s;
 	fr.ignore();
 	List.arrNorm = new IDF[List.capacity];
 
@@ -60,9 +59,9 @@ void LoadIDFList(string filename, IDF_list &List)
 	fr.close();
 }
 
-void SaveIDFList(string filename, IDF_list List)
+void saveIDFList(const string& Filename, const IDF_list List)
 {
-	ofstream fw(filename, ios::out);
+	ofstream fw(Filename, ios::out);
 
 	fw << List.size << "\n";
 	fw << List.size << "\n";
@@ -76,7 +75,7 @@ void SaveIDFList(string filename, IDF_list List)
 	fw.close();
 }
 
-void FreeIDFList(IDF_list &List)
+void freeIDFList(IDF_list &List)
 {
 	delete[] List.arrNorm;
 	List.arrNorm = nullptr;
@@ -85,27 +84,27 @@ void FreeIDFList(IDF_list &List)
 	List.numFile = 0;
 }
 
-void IDFList_Input(IDF_list& List, int numFile, string* data, int n) // data is sorted increasingly
+void idfListInput(IDF_list& List, const int NumFile, string* Data, const int N) // Supposed data is sorted increasingly
 {
-	List.numFile = numFile;
+	List.numFile = NumFile;
 	int count = 0;
-	for (int i = 0; i < n - 1; i++)
+	for (int i = 0; i < N - 1; i++)
 	{
 		count++;
-		if (data[i] != data[i + 1]) {
-			if (count >= numFile) // idf = 0
+		if (Data[i] != Data[i + 1]) {
+			if (count >= NumFile) // idf = 0
 			{
 				count = 0;
 				continue;
 			}
-			IDF idf{ data[i], count };
+			const IDF idf{ Data[i], count };
 			addIDF(List, idf);
 			count = 0;
 		}
 	}
-	if (count > 0 && count < numFile)
+	if (count > 0 && count < NumFile)
 	{
-		IDF idf{ data[n - 1], count };
+		const IDF idf{ Data[N - 1], count };
 		addIDF(List, idf);
 		count = 0;
 	}

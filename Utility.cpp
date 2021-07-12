@@ -1,8 +1,7 @@
-#define _CRT_SECURE_NO_WARNINGS
-
 #include "Utility.h"
 #include <fstream>
 #include <thread>
+#include <utility>
 #include "IDF.h"
 using namespace std;
 
@@ -13,62 +12,62 @@ const string TEMP = getenv("TEMP");
 
 const char SEPARATOR = '\\';
 
-void initString(StringArray &sa)
+void initString(StringArray &Sa)
 {
-	sa.cap = INIT_SIZE;
-	sa.size = 0;
-	sa.Array = new string[sa.cap];
+	Sa.cap = INIT_SIZE;
+	Sa.size = 0;
+	Sa.array = new string[Sa.cap];
 }
 
-void addString(StringArray &sa, string s)
+void addString(StringArray &Sa, string s)
 {
-	if (sa.size == sa.cap) {
-		sa.cap += BLOCK;
+	if (Sa.size == Sa.cap) {
+		Sa.cap += BLOCK;
 
-		string* temp = new string[sa.cap];
-		for (int i = 0; i < sa.size; i++)
-			temp[i] = sa.Array[i];
+		string* temp = new string[Sa.cap];
+		for (int i = 0; i < Sa.size; i++)
+			temp[i] = Sa.array[i];
 
-		delete[] sa.Array;
-		sa.Array = temp;
+		delete[] Sa.array;
+		Sa.array = temp;
 	}
-	sa.Array[sa.size++] = s;
+	Sa.array[Sa.size++] = std::move(s);
 }
 
-void deleteArray(StringArray &sa)
+void deleteArray(StringArray &Sa)
 {
-	delete[] sa.Array;
-	sa.cap = 0;
-	sa.size = 0;
+	delete[] Sa.array;
+	Sa.cap = 0;
+	Sa.size = 0;
 }
 
-void loadTextToArray(StringArray &sa, string filename)
+void loadTextToArray(StringArray &Sa, const string& Filename)
 {
-	ifstream fin(filename, ios::in);
-	sa.size = 0;
-	string temp = "";
+	ifstream fin(Filename, ios::in);
+	Sa.size = 0;
+	string temp;
 	while(getline(fin, temp)) 
 	{
-		addString(sa, temp);
+		addString(Sa, temp);
 	}
 	fin.close();
 }
 
 // ------------------------------------
 
-void makeFolderWrapper(string path_to_folder)
+void makeFolderWrapper(const string& PathToFolder)
 {
-	evalCommand(string("mkdir \"") + path_to_folder + "\">nul");
+	evalCommand(string("mkdir \"") + PathToFolder + "\">nul");
 }
 
-void getFolderWrapper(string path_to_folder, string path_to_outputFile)
+void getFolderWrapper(const string& PathToFolder, const string& PathToOutputFile)
 {
-	evalCommand(string("dir \"") + path_to_folder + string("\" /s /b /o:n /ad > %TEMP%\\folder_temp.txt"));
+	evalCommand(string("dir \"") + PathToFolder + string("\" /s /b /o:n /ad > %TEMP%\\folder_temp.txt"));
 
 	ifstream input(TEMP + "\\folder_temp.txt", ios::in);
-	ofstream output(path_to_outputFile, ios::out);
+	ofstream output(PathToOutputFile, ios::out);
 
-	string temp = "";
+	string temp;
 	while (getline(input, temp)) {
 		output << extractPath(temp) << "\n";
 	}
@@ -78,14 +77,14 @@ void getFolderWrapper(string path_to_folder, string path_to_outputFile)
 	deleteFileWrapper("%TEMP%\\folder_temp.txt");
 }
 
-void getFileWrapper(string path_to_folder, string path_to_outputFile)
+void getFileWrapper(const string& PathToFolder, const string& PathToOutputFile)
 {
 	
-	evalCommand(string("dir \"") + path_to_folder + string("\" /s /b /o:n > %TEMP%\\file_temp.txt"));
+	evalCommand(string("dir \"") + PathToFolder + string("\" /s /b /o:n > %TEMP%\\file_temp.txt"));
 	ifstream input(TEMP + "\\file_temp.txt", ios::in);
-	ofstream output(path_to_outputFile, ios::out);
+	ofstream output(PathToOutputFile, ios::out);
 
-	string temp = "";
+	string temp;
 	while (getline(input, temp)) {
 		output << extractPath(temp) << "\n";
 	}
@@ -95,165 +94,166 @@ void getFileWrapper(string path_to_folder, string path_to_outputFile)
 	deleteFileWrapper("%TEMP%\\file_temp.txt");
 }
 
-void deleteFileWrapper(string path_to_file)
+void deleteFileWrapper(const string& PathToFile)
 {
-	evalCommand(string("del /q \"") + path_to_file + string("\""));
+	evalCommand(string("del /q \"") + PathToFile + string("\""));
 }
 
-string extractPath(string path)
+string extractPath(string Path)
 {
-	int i = path.length() - 1;
-	while (i >= 0 && path[i] != SEPARATOR) i--;
-	return path.substr(i + 1);
+	int i = Path.length() - 1;
+	while (i >= 0 && Path[i] != SEPARATOR) i--;
+	return Path.substr(i + 1);
 }
 
-void copyFolderWrapper(string path_to_folder, string path_to_output)
+void copyFolderWrapper(const string& PathToFolder, const string& PathToOutput)
 {
-	evalCommand(string("xcopy /E/I/Y \"") + path_to_folder + "\" \"" + path_to_output + "\" >nul");
+	evalCommand(string("xcopy /E/I/Y \"") + PathToFolder + "\" \"" + PathToOutput + "\" >nul");
+}
+
+void openFileWithNotepadWrapper(const string& PathToFile)
+{
+	evalCommand(string("notepad ") + PathToFile);
 }
 
 // ---------------------------------
 
 
 
-void evalCommand(string command)
+void evalCommand(const string& Command)
 {
-	system(command.c_str());
+	system(Command.c_str());
 }
 
-string* mergeArray(string* A, int nA, string* B, int nB)
+string* mergeArray(string* A, const int Na, string* B, const int Nb)
 {
 	int i = 0;
 	int j = 0;
 	int k = 0;
-	string* res = new string[nA + nB];
-	while ((i < nA) && (j < nB)) {
+	string* res = new string[Na + Nb];
+	while ((i < Na) && (j < Nb)) {
 		if (A[i] < B[j])
 			res[k++] = A[i++];
 		else
 			res[k++] = B[j++];
 	}
-	while (i < nA)
+	while (i < Na)
 		res[k++] = A[i++];
-	while (j < nB)
+	while (j < Nb)
 		res[k++] = B[j++];
 	return res;
 }
 
-void sort_String(string *arr, int n)
+void sortString(string *Arr, const int N)
 {
-	if (n == 1)
+	if (N == 1)
 		return;
-	int m = n / 2;
+	const int m = N / 2;
 
-	sort_String(arr, m);
-	sort_String(arr + m, n - m);
+	sortString(Arr, m);
+	sortString(Arr + m, N - m);
 
-	string* temp = mergeArray(arr, m, arr + m, n - m);
-	for (int i = 0; i < n; i++) arr[i] = temp[i];
+	string* temp = mergeArray(Arr, m, Arr + m, N - m);
+	for (int i = 0; i < N; i++) Arr[i] = temp[i];
 	delete[] temp;
 }
 
-void sort_multiThread(StringArray &sa)
+void sortMultiThread(StringArray &Sa)
 {
-	int n = sa.size;
+	const int n = Sa.size;
 	int m = n / 2;
-	thread t1(sort_String, sa.Array, m);
-	thread t2(sort_String, sa.Array + m, n - m);
+	thread t1(sortString, Sa.array, m);
+	thread t2(sortString, Sa.array + m, n - m);
 	t1.join();
 	t2.join();
-	string* temp = mergeArray(sa.Array, m, sa.Array + m, n - m);
-	for (int i = 0; i < n; i++) sa.Array[i] = temp[i];
+	string* temp = mergeArray(Sa.array, m, Sa.array + m, n - m);
+	for (int i = 0; i < n; i++) Sa.array[i] = temp[i];
 	delete[] temp;
 }
 
-int bSearch_TF(TF_list List, string key) 
+int bSearchTF(const TF_list List, const string& Key) 
 {
 	int l = 0;
 	int h = List.size - 1;
 	while (l <= h) {
-		int m = (l + h) / 2;
-		if (key == List.arrNorm[m].word)
+		const int m = (l + h) / 2;
+		if (Key == List.arrNorm[m].word)
 			return m;
-		if (key < List.arrNorm[m].word) {
+		if (Key < List.arrNorm[m].word) 
 			h = m - 1;
-		}
-		else {
+		else 
 			l = m + 1;
-		}
 	}
 	return -1;
 }
 
-int bSearch_IDF(IDF_list List, string key) 
+int bSearchIDF(const IDF_list List, const string& Key) 
 {
 	int l = 0;
 	int h = List.size - 1;
 	while (l <= h) {
-		int m = (l + h) / 2;
-		if (key == List.arrNorm[m].word)
+		const int m = (l + h) / 2;
+		if (Key == List.arrNorm[m].word)
 			return m;
-		if (key < List.arrNorm[m].word) {
+		if (Key < List.arrNorm[m].word) 
 			h = m - 1;
-		}
-		else {
+		else 
 			l = m + 1;
-		}
 	}
 	return -1;
 }
 
 // ----------------------------------
 
-void initResponse(ResponseData &rd)
+void initResponse(ResponseData &Rd)
 {
-	rd.cap = INIT_SIZE;
-	rd.size = 0;
-	rd.file = new fileData[rd.cap];
+	Rd.cap = INIT_SIZE;
+	Rd.size = 0;
+	Rd.file = new FileData[Rd.cap];
 }
 
-void addResponse(ResponseData &rd, fileData f)
+void addResponse(ResponseData &Rd, const FileData F)
 {
-	if (rd.size == rd.cap) {
-		rd.cap += BLOCK;
+	if (Rd.size == Rd.cap) {
+		Rd.cap += BLOCK;
 
-		fileData* temp = new fileData[rd.cap];
-		for (int i = 0; i < rd.size; i++)
-			temp[i] = rd.file[i];
+		FileData* temp = new FileData[Rd.cap];
+		for (int i = 0; i < Rd.size; i++)
+			temp[i] = Rd.file[i];
 
-		delete[] rd.file;
-		rd.file = temp;
+		delete[] Rd.file;
+		Rd.file = temp;
 	}
-	rd.file[rd.size++] = f;
+	Rd.file[Rd.size++] = F;
 }
 
-void deleteResponse(ResponseData &rd)
+void deleteResponse(ResponseData &Rd)
 {
-	delete[] rd.file;
-	rd.cap = 0;
-	rd.size = 0;
+	delete[] Rd.file;
+	Rd.cap = 0;
+	Rd.size = 0;
 }
 
-void intersectResponse(ResponseData &dest, ResponseData sour)
+void intersectResponse(ResponseData &Dest, const ResponseData Sour)
 {
-	for(int i = 0; i < sour.size; i++)
+	for(int i = 0; i < Sour.size; i++)
 	{
-		for(int j = 0; j < dest.size; j++)
+		for(int j = 0; j < Dest.size; j++)
 		{
-			if(dest.file[j].posFolder == sour.file[i].posFolder && dest.file[j].posFile == sour.file[i].posFile)
-				dest.file[j].intersectionCount++;
+			if(Dest.file[j].posFolder == Sour.file[i].posFolder && Dest.file[j].posFile == Sour.file[i].posFile)
+				Dest.file[j].intersectionCount++;
 		}
 	}
 }
 
-void swap(fileData &a, fileData &b)
+void swap(FileData &A, FileData &B) noexcept
 {
-	fileData t = a;
-	a = b;
-	b = t;
+	const FileData t = A;
+	A = B;
+	B = t;
 }
 
-bool cmp(fileData A, fileData B)
+bool cmp(const FileData A, const FileData B)
 {
 	if(A.intersectionCount > B.intersectionCount)
 		return true;
@@ -264,32 +264,32 @@ bool cmp(fileData A, fileData B)
 	return false;
 }
 
-int partition(fileData* arr, int l, int r)
+int partition(FileData* Arr, const int L, const int R)
 {
-	int i = l;
-	fileData pivot = arr[r];
-	for(int j = l; j < r; j++) {
-		if(cmp(arr[j], pivot))
+	int i = L;
+	const FileData pivot = Arr[R];
+	for(int j = L; j < R; j++) {
+		if(cmp(Arr[j], pivot))
 		{
-			swap(arr[j], arr[i]);
+			swap(Arr[j], Arr[i]);
 			i++;
 		}
 	}
-	swap(arr[i], arr[r]);
+	swap(Arr[i], Arr[R]);
 	return i;
 }
 
-void quickSort(fileData* arr, int l, int r)
+void quickSort(FileData* Arr, const int L, const int R)
 {
-	if(l < r)
+	if(L < R)
 	{
-		int p = partition(arr, l, r);
-		quickSort(arr, l, p - 1);
-		quickSort(arr, p + 1, r);
+		const int p = partition(Arr, L, R);
+		quickSort(Arr, L, p - 1);
+		quickSort(Arr, p + 1, R);
 	}
 }
 
-void sortResponse(ResponseData &rd)
+void sortResponse(ResponseData &Rd)
 {
-	quickSort(rd.file, 0, rd.size - 1);
+	quickSort(Rd.file, 0, Rd.size - 1);
 }

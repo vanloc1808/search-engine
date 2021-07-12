@@ -1,14 +1,11 @@
 #pragma once
-
 #include <iostream>
-#include "TF.h"
-#include "IDF.h"
-using namespace std;
+using std::string;
 
-void updateMetadata(string path);
-void createMetadata(string folderDataset);
-void prepareFile(string folderPath);
-IDF_list createIDF(string folderPath);
+bool isFirstTime();
+void updateMetadata(string Path);
+void createMetadata(const string& folderDataset);
+void prepareFile(const string& FolderPath);
 void loadToRAM();
 void freeRAM();
-void searchSentence(string sentence);
+void searchSentence(const string& Sentence);

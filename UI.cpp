@@ -1,54 +1,26 @@
-#define _CRT_SECURE_NO_WARNINGS
-#pragma warning(disable:4996)
-
-#define METADATA_NAME "metadata"
-
 #define SUBFOLDER_NAME "FolderList.txt"
 
-#include <stdio.h>
 #include <iostream>
-#include <Windows.h>
 #include <string>
-#include <string.h>
 #include <fstream>
 #include <codecvt>
-#include <sstream>
-#include "Normalizer.h"
 #include "FileProgression.h"
-#include "TF.h"
-#include "IDF.h"
 #include "Utility.h"
 
 using namespace std;
 
-struct STUDENT {
-	string fullName;
-	string DOB;
-	int studentCode;
-};
-
-bool isFirstTime() {
-	ifstream fin(SUBFOLDER_NAME, ios::in);
-	if (!fin.is_open()) {
-		fin.close();
-		return true;
-	}
-	fin.close();
-	return false;
-}
-
 void initDatasetFolder() {
-	string datasetName;
+	string dataset_name;
 	cout << "Enter name of the folder that includes dataset: \n";
-	getline(cin, datasetName);
+	getline(cin, dataset_name);
 	cout << "Please wait while we initialize the metadata files...\n";
-	createMetadata(datasetName);
+	createMetadata(dataset_name);
 	cout << "Initialization completed.\n";
 }
 
-bool errorCheck(int option) {
-	const int maxOptionNum = 6;
-	return (option <= 0 || option > maxOptionNum);
+bool errorCheck(const int Option) {
+	const int max_option_num = 6;
+	return (Option <= 0 || Option > max_option_num);
 }
 
 void searchData() {
@@ -59,20 +31,18 @@ void searchData() {
 	searchSentence(keywords);
 }
 
-void showStudentInfor(STUDENT s) {
-	cout << "Full name: " << s.fullName << "\n";
-	cout << "Date of birth: " << s.DOB << "\n";
-	cout << "Student ID: " << s.studentCode << "\n";
-}
-
 void information() {
 	cout << "PROJECT SEARCH ENGINE\n";
-	STUDENT s1 = { "Nguyen Van Loc", "18/08/2002", 20120131 };
-	STUDENT s2 = { "Vo Trong Nghia", "04/04/2002", 20120536 };
+
 	cout << "Member 1.\n";
-	showStudentInfor(s1);
+	cout << "Full name: " << "Nguyen Van Loc" << "\n";
+	cout << "Date of birth: " << "18/08/2002" << "\n";
+	cout << "Student ID: " << 20120131 << "\n";
+	
 	cout << "Member 2.\n";
-	showStudentInfor(s2);
+	cout << "Full name: " << "Vo Trong Nghia" << "\n";
+	cout << "Date of birth: " << "04/04/2002" << "\n";
+	cout << "Student ID: " << 20120536 << "\n";
 }
 
 void showMenu() {
@@ -98,12 +68,12 @@ void menu() {
 		cout << "First time using? Please help us to create something.\n";
 		initDatasetFolder();
 	}
-	int option = 0;
 
 	cout << "Loading database!, please be patient!\n";
 	loadToRAM();
 
 	do {
+		int option = 0;
 		evalCommand("cls");
 		showMenu();
 		cout << "Enter the number of the options that you choose.\n";
