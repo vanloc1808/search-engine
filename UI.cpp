@@ -100,7 +100,7 @@ void menu() {
 	}
 	int option = 0;
 
-	cout << "Loading database!, please patience\n";
+	cout << "Loading database!, please be patient!\n";
 	loadToRAM();
 
 	do {

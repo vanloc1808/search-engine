@@ -16,4 +16,3 @@ int main()
 	cout << (double)clock() / CLOCKS_PER_SEC << endl;
     return 0;
 }
-

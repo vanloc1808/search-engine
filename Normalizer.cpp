@@ -4,6 +4,7 @@
 #include <fstream>
 //#include <codecvt>
 #include "Normalizer.h"
+#include <cctype>
 using namespace std;
 
 
@@ -49,5 +50,15 @@ string VEconvert(wstring source) { // Todo: include numbers
     result += normalMap[pos];
   }
   return result;
+}
+
+string normalPunctuation(string s) {
+	string temp = "";
+	for (int i = 0; i < s.length(); i++) {
+		if (!ispunct(s[i])) {
+			temp += s[i];
+		}
+	}
+	return temp;
 }
 

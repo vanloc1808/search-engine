@@ -14,6 +14,7 @@
 #include <Windows.h>
 #include <string>
 #include <string.h>
+#include <algorithm>
 #include <fstream>
 #include <codecvt>
 #include <sstream>
@@ -351,7 +352,7 @@ void searchSentence(string sentence) {
 	StringArray stringArr;
 	initString(stringArr);
 	while (oss >> temp) {
-		addString(stringArr,temp);
+		addString(stringArr,normalPunctuation(temp));
 	}
 	int size = stringArr.size;
 	ResponseData* resResponse = new ResponseData[size];
@@ -369,15 +370,59 @@ void searchSentence(string sentence) {
 	sortResponse(rd);
 	int resSize = rd.size;
 	fileData* resFiles = rd.file;
-	if (resSize > 20) {
+	/*if (resSize > 20) {
 		resSize = 20;
 	}
-	for (int i = 0; i < resSize; i++) {
-		fileData thisFile = resFiles[i];
-		cout << fileList[thisFile.posFolder][thisFile.posFile] << " in folder " << folderList[thisFile.posFolder] << ". ";
-		cout << "The value is: " << thisFile.value << ". ";
-		cout << "Fit " << thisFile.intersectionCount << " words.\n";
+	*/
+	if (resSize == 0) {
+		cout << "No items match your search.\n";
 	}
+	else {
+		int left = 0, right = min(resSize, 20);
+		while (true) {
+			for (int i = left; i < right; i++) {
+				fileData thisFile = resFiles[i];
+				cout << fileList[thisFile.posFolder][thisFile.posFile] << " in folder " << folderList[thisFile.posFolder] << ". ";
+				cout << "The value is: " << thisFile.value << ". ";
+				cout << "Fit " << thisFile.intersectionCount << " words.\n";
+			}
+
+			int openOption = 0;
+			cout << "Do you want to open any file of them? Press 0 for yes, -1 for no.\n";
+			cin >> openOption;
+			while (openOption == 0) {
+				int fileToOpen = 0;
+				cout << "Enter the number of file you want to open. (1-20)\n";
+				cin >> fileToOpen;
+				while (fileToOpen < 1 || fileToOpen>20) {
+					cout << "Invalid option. Please enter another number.\n";
+					cin >> fileToOpen;
+				}
+				string folderName = folderList[resFiles[fileToOpen - 1].posFolder];
+				string fileName = fileList[resFiles[fileToOpen - 1].posFolder][resFiles[fileToOpen - 1].posFile];
+				string pathToOpen = prevDataset + "\\" + folderName + "\\" + fileName;
+				string openCommand = "notepad \"" + pathToOpen + "\"";
+				evalCommand(openCommand);
+				//system("pause");
+				cout << "Press 0 if you want to open a different file, -1 if no.\n";
+				cin >> openOption;
+			}
+			if (right == resSize) {
+				cout << "This is the last page!\n";
+				break;
+			}
+			else {
+				int nextPage = 0;
+				left += right - left + 1;
+				right = min(resSize, right + 20);
+				cout << "Press 0 if you want to go to next page, any number else if no.\n";
+				cin >> nextPage;
+				if (nextPage != 0) {
+					break;
+				}
+			}
+		}
+	}	
 	delete[]resResponse;
 	deleteArray(stringArr);
 }
