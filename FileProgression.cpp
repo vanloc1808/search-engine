@@ -285,7 +285,6 @@ void freeRAM()
 
 	}
 	delete[] file_list;
-
 }
 
 ResponseData queryRequest(const string& Word) // singular word

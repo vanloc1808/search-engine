@@ -1,3 +1,5 @@
+#define _CRT_SECURE_NO_WARNINGS
+
 #include "Utility.h"
 #include <fstream>
 #include <thread>

@@ -15,7 +15,7 @@ struct IDF_list {
 	IDF* arrNorm;
 };
 
-double getIDFValue(IDF_list List, int i);
+double getIDFValue(IDF_list, int);
 
 void idfListInit(IDF_list&);
 void addIDF(IDF_list&, IDF);

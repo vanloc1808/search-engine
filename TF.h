@@ -15,7 +15,7 @@ struct TF_list {
 	TF* arrNorm;
 };
 
-double getTFValue(TF_list List, int i);
+double getTFValue(TF_list, int);
 
 void tfListInit(TF_list&);
 void addTF(TF_list&, const TF&);

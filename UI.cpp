@@ -19,7 +19,7 @@ void initDatasetFolder() {
 }
 
 bool errorCheck(const int Option) {
-	const int max_option_num = 6;
+	const int max_option_num = 5;
 	return (Option <= 0 || Option > max_option_num);
 }
 
@@ -56,7 +56,7 @@ void showMenu() {
 
 void updateFolder()
 {
-	cout << "Enter path to the folder you want to add:";
+	cout << "Enter path to the folder you want to add: ";
 	string path;
 	cin.ignore();
 	getline(cin, path);
@@ -64,14 +64,17 @@ void updateFolder()
 }
 
 void menu() {
+	//double time1 = 0;
 	if (isFirstTime()) {
 		cout << "First time using? Please help us to create something.\n";
 		initDatasetFolder();
+		//time1 = static_cast<double>(clock()) / CLOCKS_PER_SEC;
+		//cout << "Creating metadata files takes " << time1 << " seconds" << "\n";
 	}
-
 	cout << "Loading database!, please be patient!\n";
 	loadToRAM();
-
+	//double time2 = static_cast<double>(clock()) / CLOCKS_PER_SEC - time1;
+	//cout << "Loading to RAM takes " << time2 << " seconds" << "\n";
 	do {
 		int option = 0;
 		evalCommand("cls");
@@ -85,7 +88,7 @@ void menu() {
 		else {
 			if (option == 1) {
 				updateFolder();
-				cout << "Reloading database!, please patience\n";
+				cout << "Reloading database!, please be patient\n";
 				freeRAM();
 				loadToRAM();
 			}
@@ -93,7 +96,9 @@ void menu() {
 				freeRAM();
 				string remove = "rmdir /s /q metadata ";
 				evalCommand(remove);
+				cin.ignore();
 				initDatasetFolder();
+				loadToRAM();
 			}
 			else if (option == 3) {
 				searchData();
@@ -102,9 +107,10 @@ void menu() {
 				information();
 			}
 			else if (option == 5) {
+				cout << "Thank you very much! See you again!";
 				break;
 			}
+			evalCommand("pause");
 		}
-		evalCommand("pause");
 	} while (true);
 }
