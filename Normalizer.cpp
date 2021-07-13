@@ -33,7 +33,7 @@ char normal_map[] = { 'a','a','a','a','a','a','a','a','a','a','a','a','a','a','a
   'b','c','d','d','f','g','h','j','k','l','m','n','p','q','r','s','t','v','w','x','y','y','y','y','y','y','z' };
 
 
-
+// Keeps only latin word & number from vietnamese word
 string VEconvert(const wstring& Source) { 
   string result;
   for (wchar_t t : Source)
@@ -48,6 +48,7 @@ string VEconvert(const wstring& Source) {
   return result;
 }
 
+// Return removed punctuation string
 string normalPunctuation(const string& S) {
 	string temp;
 	for (char i : S)

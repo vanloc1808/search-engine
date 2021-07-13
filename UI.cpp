@@ -1,9 +1,10 @@
-#define SUBFOLDER_NAME "FolderList.txt"
+#include "UI.h"
 
+#include <codecvt>
+#include <fstream>
 #include <iostream>
 #include <string>
-#include <fstream>
-#include <codecvt>
+
 #include "FileProgression.h"
 #include "Utility.h"
 
@@ -31,6 +32,7 @@ void searchData() {
 	searchSentence(keywords);
 }
 
+// information tab
 void information() {
 	cout << "PROJECT SEARCH ENGINE\n";
 
@@ -45,6 +47,7 @@ void information() {
 	cout << "Student ID: " << 20120536 << "\n";
 }
 
+// Menu of program
 void showMenu() {
 	cout << "Here is the menu of the application.\n";
 	cout << "1. Add a folder to the dataset.\n";
@@ -64,17 +67,14 @@ void updateFolder()
 }
 
 void menu() {
-	//double time1 = 0;
+	// Load database for first time
 	if (isFirstTime()) {
 		cout << "First time using? Please help us to create something.\n";
 		initDatasetFolder();
-		//time1 = static_cast<double>(clock()) / CLOCKS_PER_SEC;
-		//cout << "Creating metadata files takes " << time1 << " seconds" << "\n";
 	}
 	cout << "Loading database!, please be patient!\n";
 	loadToRAM();
-	//double time2 = static_cast<double>(clock()) / CLOCKS_PER_SEC - time1;
-	//cout << "Loading to RAM takes " << time2 << " seconds" << "\n";
+	
 	do {
 		int option = 0;
 		evalCommand("cls");
@@ -107,7 +107,7 @@ void menu() {
 				information();
 			}
 			else if (option == 5) {
-				cout << "Thank you very much! See you again!";
+				cout << "Thank you very much! See you again!\n";
 				break;
 			}
 			evalCommand("pause");

@@ -1,16 +1,16 @@
-#define _CRT_SECURE_NO_WARNINGS
-
 #include "Utility.h"
+
 #include <fstream>
 #include <thread>
 #include <utility>
+
 #include "IDF.h"
 using namespace std;
 
-const int BLOCK = 1000;
-const int INIT_SIZE = 10000;
+const int BLOCK = 1000; 
+const int INIT_SIZE = 10000; // initial size of array
 
-const string TEMP = getenv("TEMP");
+const string TEMP = getenv("TEMP"); // Path to %TEMP%
 
 const char SEPARATOR = '\\';
 
@@ -21,6 +21,7 @@ void initString(StringArray &Sa)
 	Sa.array = new string[Sa.cap];
 }
 
+// Add string to StringArray
 void addString(StringArray &Sa, string s)
 {
 	if (Sa.size == Sa.cap) {
@@ -36,6 +37,7 @@ void addString(StringArray &Sa, string s)
 	Sa.array[Sa.size++] = std::move(s);
 }
 
+// Free Array
 void deleteArray(StringArray &Sa)
 {
 	delete[] Sa.array;
@@ -43,6 +45,7 @@ void deleteArray(StringArray &Sa)
 	Sa.size = 0;
 }
 
+// Open file and load every line into array
 void loadTextToArray(StringArray &Sa, const string& Filename)
 {
 	ifstream fin(Filename, ios::in);
@@ -62,6 +65,7 @@ void makeFolderWrapper(const string& PathToFolder)
 	evalCommand(string("mkdir \"") + PathToFolder + "\">nul");
 }
 
+// Get name of all folder in folder, save to text file
 void getFolderWrapper(const string& PathToFolder, const string& PathToOutputFile)
 {
 	evalCommand(string("dir \"") + PathToFolder + string("\" /s /b /o:n /ad > %TEMP%\\folder_temp.txt"));
@@ -79,9 +83,9 @@ void getFolderWrapper(const string& PathToFolder, const string& PathToOutputFile
 	deleteFileWrapper("%TEMP%\\folder_temp.txt");
 }
 
+// Get name of all file in folder, save to text file
 void getFileWrapper(const string& PathToFolder, const string& PathToOutputFile)
 {
-	
 	evalCommand(string("dir \"") + PathToFolder + string("\" /s /b /o:n > %TEMP%\\file_temp.txt"));
 	ifstream input(TEMP + "\\file_temp.txt", ios::in);
 	ofstream output(PathToOutputFile, ios::out);
@@ -101,6 +105,7 @@ void deleteFileWrapper(const string& PathToFile)
 	evalCommand(string("del /q \"") + PathToFile + string("\""));
 }
 
+// Extracting last part of path (can be file or folder name)
 string extractPath(string Path)
 {
 	int i = Path.length() - 1;
@@ -113,6 +118,7 @@ void copyFolderWrapper(const string& PathToFolder, const string& PathToOutput)
 	evalCommand(string("xcopy /E/I/Y \"") + PathToFolder + "\" \"" + PathToOutput + "\" >nul");
 }
 
+// Open file in notepad with provided path
 void openFileWithNotepadWrapper(const string& PathToFile)
 {
 	evalCommand(string("notepad ") + PathToFile);
@@ -120,8 +126,7 @@ void openFileWithNotepadWrapper(const string& PathToFile)
 
 // ---------------------------------
 
-
-
+// evaluate command to host
 void evalCommand(const string& Command)
 {
 	system(Command.c_str());
@@ -160,6 +165,7 @@ void sortString(string *Arr, const int N)
 	delete[] temp;
 }
 
+// Sorting StringArray, using merge sort and multi-threading of 2 more workers to minimize sorting time
 void sortMultiThread(StringArray &Sa)
 {
 	const int n = Sa.size;
@@ -173,6 +179,7 @@ void sortMultiThread(StringArray &Sa)
 	delete[] temp;
 }
 
+// binary search tf with key, return position
 int bSearchTF(const TF_list List, const string& Key) 
 {
 	int l = 0;
@@ -189,6 +196,7 @@ int bSearchTF(const TF_list List, const string& Key)
 	return -1;
 }
 
+// binary search idf with key, return position
 int bSearchIDF(const IDF_list List, const string& Key) 
 {
 	int l = 0;
@@ -214,6 +222,7 @@ void initResponse(ResponseData &Rd)
 	Rd.file = new FileData[Rd.cap];
 }
 
+// Add response to array
 void addResponse(ResponseData &Rd, const FileData F)
 {
 	if (Rd.size == Rd.cap) {
@@ -229,6 +238,7 @@ void addResponse(ResponseData &Rd, const FileData F)
 	Rd.file[Rd.size++] = F;
 }
 
+// Free ram of response
 void deleteResponse(ResponseData &Rd)
 {
 	delete[] Rd.file;
@@ -236,6 +246,7 @@ void deleteResponse(ResponseData &Rd)
 	Rd.size = 0;
 }
 
+// Intersect 2 response and increase dest count
 void intersectResponse(ResponseData &Dest, const ResponseData Sour)
 {
 	for(int i = 0; i < Sour.size; i++)
@@ -281,6 +292,7 @@ int partition(FileData* Arr, const int L, const int R)
 	return i;
 }
 
+// Implement quick sort on file data
 void quickSort(FileData* Arr, const int L, const int R)
 {
 	if(L < R)
@@ -291,6 +303,7 @@ void quickSort(FileData* Arr, const int L, const int R)
 	}
 }
 
+// Sort response decreasingly by number of word been found and tf*idf value
 void sortResponse(ResponseData &Rd)
 {
 	quickSort(Rd.file, 0, Rd.size - 1);

@@ -7,6 +7,6 @@ using namespace std;
 int main()
 {
 	menu();
-	//cout << static_cast<double>(clock()) / CLOCKS_PER_SEC << endl;
+	cout << "Session ended, time taken: " << static_cast<double>(clock()) / CLOCKS_PER_SEC << " secs." << endl;
     return 0;
 }

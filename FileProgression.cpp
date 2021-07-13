@@ -1,40 +1,42 @@
-#include <iostream>
-#include <Windows.h>
-#include <string>
-#include <fstream>
-#include <codecvt>
-#include <sstream>
-#include <utility>
-#include <iomanip>
-#include <cctype>
-#include "Normalizer.h"
 #include "FileProgression.h"
-#include "TF.h"
+
+#include <cctype>
+#include <codecvt>
+#include <fstream>
+#include <iomanip>
+#include <iostream>
+#include <sstream>
+#include <string>
+#include <utility>
+#include <Windows.h>
+
 #include "IDF.h"
+#include "Normalizer.h"
+#include "TF.h"
 #include "Utility.h"
 
 using namespace std;
 
-const string METADATA_NAME = "metadata";
-const string SUBFOLDER_NAME = "FolderList.txt";
-const string INDEX_NAME = "Index.txt";
+const string METADATA_NAME = "metadata"; // metadata folder name
+const string SUBFOLDER_NAME = "FolderList.txt"; // text file save name of active folder
+const string INDEX_NAME = "Index.txt"; // text file save path to every file in dataset
 
-StringArray str_arr;
+StringArray str_arr; // StringBuilder for operating with dynamic string array
 
-string* folder_list = nullptr;
+string* folder_list = nullptr; // Array of folder name
 int folder_count = 0;
 
-string** file_list = nullptr;
-int* file_count = nullptr;
+string** file_list = nullptr; // Array of file name 
+int* file_count = nullptr; // Array of number of file
 
-FolderData* folder_data;
+FolderData* folder_data; // Store everything in metadata, for the search function
 
-string prev_dataset;
+string prev_dataset; // Store name of previous dataset loaded to this program
 
-void prepareFile(const string& FolderPath)
+void prepareFile(const string& FolderPath) // Make text file of path for further operation
 {
 	makeFolderWrapper(METADATA_NAME);
-	getFolderWrapper(FolderPath, SUBFOLDER_NAME);
+	getFolderWrapper(FolderPath, SUBFOLDER_NAME); // get folder name of folder path and save
 
 	ifstream input(SUBFOLDER_NAME, ios::in);
 
@@ -50,6 +52,7 @@ void prepareFile(const string& FolderPath)
 	input.close();
 }
 
+// Checking if metadata created
 bool isFirstTime() {
 	ifstream fin(SUBFOLDER_NAME, ios::in);
 	if (!fin.is_open()) {
@@ -58,13 +61,14 @@ bool isFirstTime() {
 	}
 	fin.close();
 	return false;
-}
+} 
 
+// create TF list from file of text
 TF_list createTF(const string& FilePath) {
 	TF_list L{};
 	tfListInit(L);
 	wifstream fin(FilePath, ios::in);
-	fin.imbue(locale(locale::empty(), new codecvt_utf16<wchar_t, 0x10ffff, std::little_endian>));
+	fin.imbue(locale(locale::empty(), new codecvt_utf16<wchar_t, 0x10ffff, std::little_endian>)); // setting up for reading UTF16-LE
 	wstring s;
 
 	while (fin >> s) {
@@ -74,13 +78,14 @@ TF_list createTF(const string& FilePath) {
 		addString(str_arr, converted_string);
 	}
 
-	sortMultiThread(str_arr);
-	tfListInput(L, str_arr.array, str_arr.size);
+	sortMultiThread(str_arr); // sorting every read word
+	tfListInput(L, str_arr.array, str_arr.size); // then add to tf list
 	fin.close();
 	str_arr.size = 0; // reset but not free
 	return L;
 }
 
+// Update folder list file with new folder
 void updateFolder(const string& FolderName)
 {
 	initString(str_arr);
@@ -108,6 +113,7 @@ void updateFolder(const string& FolderName)
 	deleteArray(str_arr);
 }
 
+// create IDF list from file of tf
 IDF_list createIDF(const string& FolderPath)
 {
 	const string directory = FolderPath + ".txt";
@@ -145,28 +151,31 @@ IDF_list createIDF(const string& FolderPath)
 		freeTFList(tfL);
 	}
 
-	sortMultiThread(str_arr);
-	idfListInput(idfL, n_files, str_arr.array, n_words);
+	sortMultiThread(str_arr); // sort every word from tf
+	idfListInput(idfL, n_files, str_arr.array, n_words); // then add to idf list
 	path.close();
 	str_arr.size = 0;
 
 	return idfL;
 }
 
+// Update metadata with provided path
 void updateMetadata(string Path)
 {
 	int k = Path.length() - 1;
 	while (k >= 0 && Path[k] != '\\') k--;
 
-	string folder_name = Path.substr(k + 1);
-	copyFolderWrapper(Path, prev_dataset + "\\" + folder_name);
-	updateFolder(folder_name);
+	string folder_name = Path.substr(k + 1); // Get only folder name from path
+	copyFolderWrapper(Path, prev_dataset + "\\" + folder_name); // copy from source to dataset folder
+	updateFolder(folder_name); // update
+	
+	// And then do regular thing as createMetadata;
 	Path = prev_dataset + "\\" + folder_name;
 	string path_to_file = string(METADATA_NAME) + "\\" + folder_name + ".txt";
 	getFileWrapper(Path, path_to_file);
 	makeFolderWrapper(string(METADATA_NAME) + "\\" + folder_name);
-	ifstream ifs(path_to_file, ios::in);
 
+	ifstream ifs(path_to_file, ios::in);
 	initString(str_arr);
 
 	string filename;
@@ -188,18 +197,20 @@ void updateMetadata(string Path)
 	freeIDFList(idf);
 
 	ifs.close();
+
 	deleteArray(str_arr);
 }
 
-void createMetadata(const string& folderDataset)
+// Initially create metadata folder from dataset folder
+void createMetadata(const string& FolderDataset)
 {
 	initString(str_arr);
-	prepareFile(folderDataset);
+	prepareFile(FolderDataset);
 
 	ifstream subFol(SUBFOLDER_NAME, ios::in);
 	string folderName;
 
-	while (getline(subFol, folderName)) 
+	while (getline(subFol, folderName))  // Reading folder name from file
 	{
 		cout << "Processing with folder " << folderName << "...\n";
 		int n_files = 0;
@@ -207,38 +218,39 @@ void createMetadata(const string& folderDataset)
 		ifstream fr(list_file, ios::in);
 		string file_name;
 
-		while (getline(fr, file_name)) 
+		while (getline(fr, file_name))  // Reading file name from file
 		{
 			n_files++;
 			string tf_path = METADATA_NAME + "\\" + folderName + "\\" + file_name + ".tf";
-			string file_path = folderDataset + "\\" + folderName + "\\" + file_name;
-			TF_list L = createTF(file_path);
-			saveTFList(tf_path, L);
-			freeTFList(L);
+			string file_path = FolderDataset + "\\" + folderName + "\\" + file_name;
+			TF_list L = createTF(file_path); // create tf list from text file
+			saveTFList(tf_path, L); // then save it to metadata
+			freeTFList(L); // free used memory
 		}
 		fr.close();
 
 		string path = METADATA_NAME + "\\" + folderName;
-		IDF_list idf = createIDF(path);
+		IDF_list idf = createIDF(path); // create idf list from folder of tf
 		string idf_path = path + string(".idf");
-		saveIDFList(idf_path, idf);
-		freeIDFList(idf);
+		saveIDFList(idf_path, idf); // then save it to metadata
+		freeIDFList(idf); // free used memory
 	}
 	subFol.close();
 
 	deleteArray(str_arr);
 
+	// Write name of dataset to end of file
 	fstream afs(SUBFOLDER_NAME, ios::app);
-	afs << folderDataset << "\n";
+	afs << FolderDataset << "\n";
 	afs.close();
 }
 
+// Loading database into RAM for searching
 void loadToRAM()
 {
 	initString(str_arr);
-
 	loadTextToArray(str_arr, SUBFOLDER_NAME);
-
+	// Initially allocate memory for every array
 	prev_dataset = str_arr.array[str_arr.size - 1];
 
 	folder_count = str_arr.size - 1;
@@ -253,6 +265,7 @@ void loadToRAM()
 
 	str_arr.size = 0;
 
+	// Then loading TFs and IDFs
 	for(int i = 0; i < folder_count; i++)
 	{
 		string file_path = string(METADATA_NAME) + "\\" + folder_list[i];
@@ -271,9 +284,19 @@ void loadToRAM()
 		}
 	}
 
+	// Write path to every file to index.txt
+	ofstream ofs(INDEX_NAME, ios::out);
+
+	for (int i = 0; i < folder_count; i++)
+		for (int j = 0; j < file_count[i]; j++)
+			ofs << prev_dataset << "\\" << folder_list[i] << "\\" << file_list[i][j] << "\n";
+	
+	ofs.close();
+
 	deleteArray(str_arr);
 }
 
+// Free RAM used for array
 void freeRAM()
 {
 	delete[] folder_list;
@@ -287,7 +310,8 @@ void freeRAM()
 	delete[] file_list;
 }
 
-ResponseData queryRequest(const string& Word) // singular word
+// Query single word with database
+ResponseData queryRequest(const string& Word) 
 {
 	int pos_idf;
 	int pos_tf;
@@ -297,14 +321,17 @@ ResponseData queryRequest(const string& Word) // singular word
 
 	for(int i = 0; i < folder_count; i++) 
 	{
+		// search word in list of idf
 		if((pos_idf = bSearchIDF(folder_data[i].idfL, Word)) != -1) // If found
 		{
 			const double idf_value = getIDFValue(folder_data[i].idfL, pos_idf);
 			for(int j = 0; j < file_count[i]; j++)
 			{
-				if((pos_tf = bSearchTF(folder_data[i].tfLArr[j], Word)) != -1)
+				// search word in list of tf
+				if((pos_tf = bSearchTF(folder_data[i].tfLArr[j], Word)) != -1) // If found
 				{
 					const double tf_value = getTFValue(folder_data[i].tfLArr[j], pos_tf);
+					// Then calculate the value of tf*idf save to response
 					addResponse(rd, FileData{i, j, idf_value * tf_value, 1});
 				}
 			}
@@ -313,7 +340,7 @@ ResponseData queryRequest(const string& Word) // singular word
 	return rd;
 }
 
-
+// find which response have largest size, return position
 int findMaxSize(ResponseData* RespArr, const int ArrSize) {
 	ResponseData res = RespArr[0];
 	int idx = 0;
@@ -326,20 +353,24 @@ int findMaxSize(ResponseData* RespArr, const int ArrSize) {
 	return idx;
 }
 
+// Query sentence from input
 void searchSentence(const string& Sentence) {
+	// input sentence into string stream for easy separating
 	istringstream iss(Sentence);
 	string temp;
 	StringArray string_arr{};
 	initString(string_arr);
-	while (iss >> temp) {
+	while (iss >> temp) { // Add each word without punctuation to string array
 		addString(string_arr,normalPunctuation(temp));
 	}
-	int size = string_arr.size;
+	const int size = string_arr.size;
 	ResponseData* res_response = new ResponseData[size];
 	for (int i = 0; i < size; i++) {
 		res_response[i] = queryRequest(string_arr.array[i]);
-	}
-	int max_index = findMaxSize(res_response, size);
+	} // Get all response data from database;
+
+	// Then intersect max sized response with others to determine how many word been found
+	const int max_index = findMaxSize(res_response, size);
 	ResponseData rd = res_response[max_index];
 	for (int i = 0; i < size; i++) {
 		if (i == max_index) {
@@ -347,7 +378,7 @@ void searchSentence(const string& Sentence) {
 		}
 		intersectResponse(rd, res_response[i]);
 	}
-	sortResponse(rd);
+	sortResponse(rd); 
 	const int res_size = rd.size;
 	FileData* res_files = rd.file;
 	if (res_size == 0) {
@@ -405,6 +436,7 @@ void searchSentence(const string& Sentence) {
 				continue;
 			}
 			op -= 48;
+			if (op + left >= res_size) continue;
 			openFileWithNotepadWrapper(prev_dataset + "\\" + folder_list[res_files[op + left].posFolder] + "\\" + file_list[res_files[op + left].posFolder][res_files[op + left].posFile]);
 		}
 	}	
