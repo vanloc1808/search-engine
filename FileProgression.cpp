@@ -389,11 +389,11 @@ void searchSentence(const string& Sentence) {
 		while (true) {
 			evalCommand("cls");
 			cout << "Your search query: " << Sentence << "\n";
-			cout << "Displaying result of " << left << " - " << right - 1 << " in " << res_size <<" files.!\n";
-			for (int i = left; i < right; i++) {
+			cout << "Displaying result of " << left << " - " << min(right, res_size) - 1 << " in " << res_size <<" files.!\n";
+			for (int i = left; i < min(right, res_size); i++) {
 				const FileData this_file = res_files[i];
-				cout << i - left << ") " << fixed << setprecision(4) << this_file.value << "   "
-					<< file_list[this_file.posFolder][this_file.posFile] << "\t in folder "
+				cout << i - left << ") " << fixed << setprecision(4) << this_file.value << " " << setw(30)
+					<< file_list[this_file.posFolder][this_file.posFile] << setw(30) << " in folder "
 					<< folder_list[this_file.posFolder] << "\n";
 			}
 
@@ -412,7 +412,7 @@ void searchSentence(const string& Sentence) {
 			{
 				left += 10;
 				right += 10;
-				if (right > res_size)
+				if (left > res_size)
 				{
 					left -= 10;
 					right -= 10;
